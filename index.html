@@ -105,6 +105,17 @@ h2{margin:0 0 8px;font-size:30px}
 .quillBtn{font-size:30px;padding:8px 18px}
 #log{font-size:18px;color:var(--muted);min-height:24px;text-align:center}
 .shake{animation:wrong .4s}
+#rhymeBody{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:16px 16px 140px}
+#verse{background:var(--ink);color:#2a2340;border-radius:24px;padding:22px 40px;font-size:36px;font-weight:800;text-align:center;line-height:1.5;box-shadow:0 6px 0 #0006}
+.blank{display:inline-block;min-width:120px;border-bottom:5px dashed #8a7fb0;color:#8a7fb0}
+.blank.got{color:var(--fire);border-bottom-color:var(--fire)}
+#rhymeOpts{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.ropt{background:var(--panel2);border-radius:20px;padding:14px 26px;font-size:30px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:150px;box-shadow:0 5px 0 #0006}
+.ropt .em{font-size:54px}
+.ropt.no{opacity:.35}
+#rhymeStars{font-size:40px;letter-spacing:6px}
+.node.signn{cursor:pointer}
+.node.fresh circle{stroke:#9fe8ff;stroke-width:6}
 .ready{animation:ready 1.4s ease-out}
 @keyframes ready{0%{box-shadow:0 0 0 0 #ffd16600}30%{box-shadow:0 0 28px 8px #ffd166aa}100%{box-shadow:0 0 0 0 #ffd16600}}
 #answerShow.ready{border-radius:14px}
@@ -178,7 +189,7 @@ h2{margin:0 0 8px;font-size:30px}
     <button class="btn" id="wardrobeBtn" title="Wardrobe" style="min-height:44px;padding:6px 14px;font-size:26px">👗</button>
     <button class="btn ghost" id="resetBtn" title="Start over" style="min-height:44px;padding:8px 14px">⟲</button>
   </div>
-  <div id="mapArea"><svg id="mapSvg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet"></svg></div>
+  <div id="mapArea"><svg id="mapSvg" viewBox="0 0 1400 700" preserveAspectRatio="xMidYMid meet"></svg></div>
 </section>
 
 <!-- DUEL -->
@@ -247,6 +258,20 @@ h2{margin:0 0 8px;font-size:30px}
   </div>
 </section>
 
+<!-- RHYME RESCUE -->
+<section id="rhyme" class="screen">
+  <div class="topbar enc"><button class="btn ghost retreatBtn tl">↩ Retreat</button>
+    <b>Rhyme rescue! Help the bard finish his song</b>
+    <button class="btn ghost tr" id="skipRhyme">🛡️ Skip</button></div>
+  <div id="rhymeBody">
+    <div id="rhymeStars"></div>
+    <div id="verse"></div>
+    <button class="btn ghost" id="hearBtn">🔊 Hear it</button>
+    <div id="rhymeOpts"></div>
+    <div class="small" id="rhymeInfo"></div>
+  </div>
+</section>
+
 <!-- WARDROBE -->
 <section id="wardrobe" class="screen">
   <div class="row" style="width:100%"><h2>Wardrobe</h2><span class="spacer"></span><button class="btn" id="wardrobeBack">Back to map</button></div>
@@ -303,6 +328,19 @@ const LINES={
   divert:[{id:'divert_01',t:"Look over there! Hehe, he's distracted. He has to keep the smaller roll."}],
   full:[{id:'full_01',t:"Our camp is full of shield guards! Maybe train some into archers?"}],
   hint:[{id:'hint_01',t:"Our shield guards used to be bandits. They know these woods. Which word should they sniff out?"}],
+  coldStart:[{id:'cold_01',t:"A cold duel! Roll and take it away from your stone. First to zero wins!"}],
+  frozen:[{id:'frozen_01',t:"Frozen solid! Brrr, that's how it's done!"}],
+  rightCold:[{id:'rightcold_01',t:"Brrr! Nicely done!"},{id:'rightcold_02',t:"Ice cold maths!"},{id:'rightcold_03',t:"Chilly AND correct!"}],
+  frostBoss:[{id:'frostboss_01',t:"The Frost Wyrm! Its breath could freeze a waterfall. Eight-sided dice... brrr."}],
+  frostWelcome:[{id:'frostwelcome_01',t:"Brrr! The Frostpeaks! I knew I should have packed a scarf."}],
+  bossWin:[{id:'bosswin_01',t:"You did it! I'm writing a whole ballad about this. Three verses. Maybe four!"}],
+  bossLost:[{id:'bosslost_01',t:"Phew, that was tough. Let's explore a bit, gather friends, and try again later!"}],
+  bossResting:[{id:'bossrest_01',t:"Shh, the boss is resting. Let's come back after a little adventure."}],
+  choiceCold:[{id:'choicecold_01',t:"Choose your frost! Two little ones, or one big one? The other dragon has to use the same."}],
+  rhymeStart:[{id:'rhyme_01',t:"Help! My song needs a word at the end of each line. Which one rhymes?"}],
+  rhymeWrong:[{id:'rhymewrong_01',t:"Hmm, say them both out loud. Do they sound alike?"},{id:'rhymewrong_02',t:"Close, but that doesn't rhyme. Try another!"}],
+  rhymeRight:[{id:'rhymeright_01',t:"That rhymes! Lovely!"},{id:'rhymeright_02',t:"Ooh, that sounds perfect!"}],
+  rhymeWin:[{id:'rhymewin_01',t:"What a song! I'll sing it at every inn from here to the sea."}],
   rested:[{id:'rested_01',t:"Our friends are back from their nap. Well rested and only slightly grumpy!"}],
   retreat:[{id:'retreat_01',t:"A tactical retreat! Very wise. Very brave. Mostly wise."}],
   skip:[{id:'skip_01',t:"Our shield guard will handle this one. He'll need a long nap afterwards, though!"}],
@@ -407,110 +445,165 @@ function drawSigSmall(){
   else{x.fillStyle='#2a2340';x.font='bold 24px sans-serif';x.fillText(S.name||'',8,34);}
 }
 
-// ---------- Map ----------
-const TYPES={duel:{icon:'🔥',col:'#9b6bff',name:'Heat duel (Wizard)'},choice:{icon:'🎲',col:'#9b6bff',name:'Choose your flame (Wizard)'},
-  search:{icon:'📜',col:'#2fc4b2',name:'Bandit words (Scholar)'},
-  boss:{icon:'🐉',col:'#ff7a2f',name:'Elder duel'},start:{icon:'⛺',col:'#888',name:'Camp'}};
-function newRun(){
+// ---------- World map ----------
+const MAP_W=1400, MAP_H=700;
+const REGIONS={
+  forest:{name:'Whispering Forest',mode:'heat',bg:'#1c2a24',fog:'#0b0a14',tree:'#2e4a3a',mtn:'#33414a',cap:'#d8dde6',treeShare:.78,
+    boss:{n:'Elder Emberclaw',c:'purple'}},
+  frost:{name:'Frostpeaks',mode:'cold',bg:'#26313f',fog:'#0c1220',tree:'#46646e',mtn:'#5b6c82',cap:'#f4f8ff',treeShare:.3,
+    boss:{n:'the Frost Wyrm',c:'blue'}}};
+const TYPES={start:{icon:'⛺',col:'#888'},duel:{icon:'🔥',col:'#9b6bff'},choice:{icon:'🎲',col:'#9b6bff'},
+  search:{icon:'📜',col:'#2fc4b2'},rhyme:{icon:'🎵',col:'#2fc4b2'},boss:{icon:'🐉',col:'#ff7a2f'},
+  sign:{icon:'🚧',col:'#b08a3c'},exit:{icon:'➡️',col:'#3a7bff'},back:{icon:'⬅️',col:'#3a7bff'}};
+const PLAIN=['start','sign','exit','back'];
+function iconFor(n){if(n.region==='frost'){if(n.t==='duel')return '❄️';if(n.t==='boss')return '🐲';}return TYPES[n.t].icon;}
+const SIGNS={
+  hollow:{title:'Path to Haunted Hollow',text:'A crooked sign: CLOSED FOR CONSTRUCTION.<br>From somewhere behind it comes a ghostly giggle.'},
+  meadow:{title:'Path to Meadowfold',text:'A sign on the fence: CLOSED FOR CONSTRUCTION.<br>You can smell fresh bread on the breeze.'},
+  hushwall:{title:'Road to Hushwall City',text:'A sign: CLOSED FOR CONSTRUCTION.<br>Underneath, in very tiny letters: <i>shhh!</i>'},
+  tundra:{title:'Way to the Windswept Tundra',text:'A frosty sign: CLOSED FOR CONSTRUCTION.<br>Far away, caravan bells jingle in the wind.'},
+  mine:{title:'The sealed mine doors',text:'A sign: CLOSED FOR CONSTRUCTION.<br>Behind it, someone has scratched graffiti into the stone:<br><b>"Speak Fr…"</b>'},
+  beyond:{title:'Beyond the Frostpeaks',text:'The path vanishes into fog. CLOSED FOR CONSTRUCTION.<br>More of the world is coming soon!'}};
+function genRegion(region,mid,signs,nodes){
   const layers=[[{t:'start'}]];
-  for(let i=1;i<=4;i++){const n=2+Math.floor(Math.random()*2);const L=[];
-    for(let j=0;j<n;j++)L.push({t:Math.random()<.5?((i>=2&&Math.random()<.5)?'choice':'duel'):'search'});
-    if(!L.some(x=>x.t==='duel'||x.t==='choice'))L[0].t='duel'; if(!L.some(x=>x.t==='search'))L[L.length-1].t='search';
-    layers.push(L);}
+  for(let i=1;i<=mid;i++){
+    const n=2+Math.floor(Math.random()*2);
+    const duel=()=>(i>=Math.ceil(mid/2)&&Math.random()<.5)?'choice':'duel';
+    const word=()=>Math.random()<.5?'search':'rhyme';
+    const L=[{t:duel()},{t:word()}]; if(n===3)L.push({t:Math.random()<.5?duel():word()});
+    L.sort(()=>Math.random()-.5); layers.push(L);}
   layers.push([{t:'boss'}]);
-  const nodes=[];let id=0;
-  layers.forEach((L,li)=>L.forEach((nd,j)=>{nd.id=id++;nd.layer=li;nd.x=80+li*(840/(layers.length-1));
-    nd.y=L.length===1?290:130+j*(330/(L.length-1));nd.next=[];nodes.push(nd);}));
-  for(let li=0;li<layers.length-1;li++){const A=layers[li],B=layers[li+1];
-    const link=(a,b)=>{if(!a.next.includes(b.id))a.next.push(b.id);};
+  const LN=layers.length, step=(MAP_W-260)/LN, X=li=>110+li*step;
+  layers.forEach((Ls,li)=>Ls.forEach((nd,j)=>{Object.assign(nd,{id:nodes.length,region,layer:li,x:X(li),
+    y:Ls.length===1?350:170+j*(360/(Ls.length-1)),next:[]});nodes.push(nd);}));
+  const link=(a,b)=>{if(!a.next.includes(b.id))a.next.push(b.id);};
+  for(let li=0;li<LN-1;li++){const A=layers[li],B=layers[li+1];
     A.forEach((a,i)=>link(a,B[Math.round(A.length===1?0:i*(B.length-1)/(A.length-1))]));
     B.forEach((b,j)=>link(A[Math.round(B.length===1?0:j*(A.length-1)/(B.length-1))],b));
     if(A.length===1)B.forEach(b=>link(A[0],b)); if(B.length===1)A.forEach(a=>link(a,B[0]));
-    A.forEach(a=>{if(Math.random()<.35){const b=B[Math.floor(Math.random()*B.length)];link(a,b);}});
-  }
-  const deco=[];
-  for(let i=0;i<70;i++)deco.push({x:Math.random()*1000,y:Math.random()*600,k:Math.random()<.75?'tree':'mtn',s:.7+Math.random()*.7});
-  S.run={nodes,pos:0,visited:[0],prot:0,deco}; save();
+    A.forEach(a=>{if(Math.random()<.35)link(a,B[Math.floor(Math.random()*B.length)]);});}
+  const boss=layers[LN-1][0];
+  const exit={id:nodes.length,region,t:'exit',layer:LN,x:X(LN),y:350,next:[]};nodes.push(exit);boss.next.push(exit.id);
+  signs.forEach(sg=>{const src=layers[sg.layer-1], a=sg.top?src[0]:src[src.length-1];
+    const s={id:nodes.length,region,t:'sign',sign:sg.key,layer:sg.layer,x:X(sg.layer),y:sg.top?62:640,next:[]};nodes.push(s);a.next.push(s.id);});
+  return {start:layers[0][0],boss,exit};
 }
-function migrateRun(){if(S.run&&!S.run.deco){const p=S.run.prot||0;newRun();S.run.prot=p;save();}}
+function makeDeco(region){const R=REGIONS[region],d=[];
+  for(let i=0;i<95;i++)d.push({x:Math.random()*MAP_W,y:Math.random()*MAP_H,k:Math.random()<R.treeShare?'tree':'mtn',s:.7+Math.random()*.8});return d;}
+function newRun(){
+  const nodes=[];
+  const F=genRegion('forest',7,[{key:'hollow',layer:2,top:true},{key:'meadow',layer:4,top:false},{key:'hushwall',layer:6,top:true}],nodes);
+  const R=genRegion('frost',5,[{key:'tundra',layer:2,top:true},{key:'mine',layer:4,top:false}],nodes);
+  F.exit.to=R.start.id;
+  R.exit.t='sign';R.exit.sign='beyond';
+  const back={id:nodes.length,region:'frost',t:'back',layer:0,x:110,y:640,next:[],to:F.exit.id};nodes.push(back);R.start.next.push(back.id);
+  const keep=S.run&&S.run.world===2?null:{prot:(S.run&&S.run.prot)||0,arch:(S.run&&S.run.arch)||0};
+  S.run={world:2,nodes,pos:F.start.id,visited:[F.start.id],seen:[],cleared:[],bossRest:{},rest:[],
+    prot:keep?keep.prot:0,arch:keep?keep.arch:0,deco:{forest:makeDeco('forest'),frost:makeDeco('frost')}};
+  save();
+}
+function migrateRun(){if(!S.run||S.run.world!==2)newRun();}
 function goMap(){show('map');updateHud();drawMap();setTimeout(()=>say('map'),400);}
 function drawMap(){
   const svg=document.getElementById('mapSvg'),R=S.run;let h='';
-  const cur=R.nodes[R.pos], visited=new Set(R.visited);
-  if(!R.seen)R.seen=[...R.visited];
+  const cur=R.nodes[R.pos], reg=cur.region, RG=REGIONS[reg], visited=new Set(R.visited);
   cur.next.forEach(i=>{if(!R.seen.includes(i))R.seen.push(i);}); save();
-  const vis=new Set([...R.visited,...R.seen]);
-  h+=`<defs><filter id="fblur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="35"/></filter>
-    <mask id="fogm"><rect width="1000" height="600" fill="white"/><g filter="url(#fblur)">
-    ${[...vis].map(i=>{const n=R.nodes[i];return `<circle cx="${n.x}" cy="${n.y}" r="${visited.has(i)?115:(cur.next.includes(i)?95:75)}" fill="black"/>`;}).join('')}
+  const inReg=n=>n.region===reg;
+  const vis=new Set([...R.visited,...R.seen].filter(i=>inReg(R.nodes[i])));
+  h+=`<defs><filter id="fblur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="38"/></filter>
+    <mask id="fogm" maskUnits="userSpaceOnUse" x="-400" y="-400" width="${MAP_W+800}" height="${MAP_H+800}"><rect x="-400" y="-400" width="${MAP_W+800}" height="${MAP_H+800}" fill="white"/><g filter="url(#fblur)">
+    ${[...vis].map(i=>{const n=R.nodes[i];return `<circle cx="${n.x}" cy="${n.y}" r="${visited.has(i)?120:(cur.next.includes(i)?100:80)}" fill="black"/>`;}).join('')}
     </g></mask></defs>`;
-  h+=`<rect width="1000" height="600" fill="#1c2a24"/>`;
-  R.deco.forEach(d=>{
-    if(d.k==='tree')h+=`<g transform="translate(${d.x},${d.y}) scale(${d.s})"><path d="M0 -40 L18 0 L-18 0Z M0 -26 L22 12 L-22 12Z" fill="#2e4a3a"/><rect x="-3" y="12" width="6" height="8" fill="#3b2a1a"/></g>`;
-    else h+=`<path d="M${d.x-60*d.s} ${d.y} L${d.x} ${d.y-70*d.s} L${d.x+60*d.s} ${d.y}Z" fill="#33414a"/><path d="M${d.x-14*d.s} ${d.y-54*d.s} L${d.x} ${d.y-70*d.s} L${d.x+14*d.s} ${d.y-54*d.s}Z" fill="#d8dde6"/>`;});
-  h+=`<rect width="1000" height="600" fill="#0b0a14" opacity=".94" mask="url(#fogm)"/>`;
+  h+=`<rect x="-400" y="-400" width="${MAP_W+800}" height="${MAP_H+800}" fill="${RG.bg}"/>`;
+  R.deco[reg].forEach(d=>{
+    if(d.k==='tree')h+=`<g transform="translate(${d.x},${d.y}) scale(${d.s})"><path d="M0 -40 L18 0 L-18 0Z M0 -26 L22 12 L-22 12Z" fill="${RG.tree}"/><rect x="-3" y="12" width="6" height="8" fill="#3b2a1a"/></g>`;
+    else h+=`<path d="M${d.x-60*d.s} ${d.y} L${d.x} ${d.y-70*d.s} L${d.x+60*d.s} ${d.y}Z" fill="${RG.mtn}"/><path d="M${d.x-14*d.s} ${d.y-54*d.s} L${d.x} ${d.y-70*d.s} L${d.x+14*d.s} ${d.y-54*d.s}Z" fill="${RG.cap}"/>`;});
+  h+=`<rect x="-400" y="-400" width="${MAP_W+800}" height="${MAP_H+800}" fill="${RG.fog}" opacity=".94" mask="url(#fogm)"/>`;
   R.nodes.forEach(a=>{if(!vis.has(a.id))return; a.next.forEach(bid=>{const b=R.nodes[bid];
     if(visited.has(a.id)&&visited.has(bid))
       h+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#ffd166" stroke-width="8" opacity=".8"/>`;
     else if(visited.has(a.id)&&vis.has(bid))
       h+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#cfc6ef" stroke-width="5" stroke-dasharray="10 10" opacity="${a.id===R.pos?.8:.45}"/>`;
-    else if(!visited.has(a.id)){ // sighted but unvisited: short stub into the fog
-      const ex=a.x+(b.x-a.x)*.32, ey=a.y+(b.y-a.y)*.32;
+    else if(!visited.has(a.id)){const ex=a.x+(b.x-a.x)*.32, ey=a.y+(b.y-a.y)*.32;
       h+=`<line x1="${a.x}" y1="${a.y}" x2="${ex}" y2="${ey}" stroke="#cfc6ef" stroke-width="4" stroke-dasharray="6 8" opacity=".45"/>`;}
   });});
   R.nodes.forEach(n=>{if(!vis.has(n.id))return; const T=TYPES[n.t];const cls=['node'];
-    const isNew=cur.next.includes(n.id)&&!visited.has(n.id);
-    if(isNew)cls.push('avail'); else if(visited.has(n.id)&&n.id!==R.pos)cls.push('done','back'); else if(!visited.has(n.id))cls.push('sighted');
-    h+=`<g class="${cls.join(' ')}" data-id="${n.id}"><circle cx="${n.x}" cy="${n.y}" r="${n.t==='boss'?50:38}" fill="${T.col}"/>
-      <text x="${n.x}" y="${n.y+14}" text-anchor="middle" font-size="${n.t==='boss'?46:36}">${visited.has(n.id)&&n.t!=='start'?'✔️':T.icon}</text></g>`;});
+    const isV=visited.has(n.id), resting=(R.bossRest[n.id]||0)>0;
+    if(n.t==='sign')cls.push('signn');
+    else if(!isV&&cur.next.includes(n.id))cls.push('avail');
+    else if(isV&&n.id!==R.pos){cls.push('back'); if(n.cleared||PLAIN.includes(n.t))cls.push('done');}
+    else if(!isV)cls.push('sighted');
+    if(isV&&!n.cleared&&n.fresh)cls.push('fresh');
+    let ic=iconFor(n); if(isV&&n.cleared&&!PLAIN.includes(n.t))ic='✔️'; if(resting)ic='💤';
+    const big=n.t==='boss';
+    h+=`<g class="${cls.join(' ')}" data-id="${n.id}"><circle cx="${n.x}" cy="${n.y}" r="${big?50:38}" fill="${T.col}"/>
+      <text x="${n.x}" y="${n.y+14}" text-anchor="middle" font-size="${big?46:36}">${ic}</text>
+      ${cls.includes('fresh')?`<text x="${n.x+30}" y="${n.y-24}" font-size="26">✨</text>`:''}</g>`;});
   h+=`<g transform="translate(${cur.x-45},${cur.y-115})">${dragonSVG(S.colour,90).replace('<svg','<svg x="0" y="0"')}</g>`;
+  h+=`<text x="${MAP_W-24}" y="${MAP_H-22}" text-anchor="end" font-size="34" font-weight="800" fill="#fff" opacity=".55">${RG.name}</text>`;
   svg.innerHTML=h;
-  svg.querySelectorAll('.node.avail,.node.back').forEach(g=>g.onclick=()=>enterNode(+g.dataset.id));
+  svg.querySelectorAll('.node.avail,.node.back,.node.signn').forEach(g=>g.onclick=()=>enterNode(+g.dataset.id));
 }
 const FLAMES={
-  one6:{sides:[6],name:'Little flame',desc:'one flame, 1 to 6'},
-  twin6:{sides:[6,6],name:'Twin sparks',desc:'two small flames, 1 to 6 each'},
-  big8:{sides:[8],name:'Big ember',desc:'one big flame, 1 to 8'},
-  big10:{sides:[10],name:'Roaring blaze',desc:'one huge flame, 1 to 10'},
-  twin8:{sides:[8,8],name:'Twin embers',desc:'two big flames, 1 to 8 each'},
-  big12:{sides:[12],name:'Dragonfire',desc:'one giant flame, 1 to 12'}};
-function duelOpt(key,extra){const f=FLAMES[key];const avg=f.sides.reduce((a,s)=>a+(s+1)/2,0);
-  return Object.assign({sides:f.sides,flame:f.name,target:Math.max(15,Math.round(avg)*5),boss:false},extra||{});}
+  one6:{sides:[6],name:'Little flame'},twin6:{sides:[6,6],name:'Twin sparks'},big8:{sides:[8],name:'Big ember'},
+  big10:{sides:[10],name:'Roaring blaze'},twin8:{sides:[8,8],name:'Twin embers'},big12:{sides:[12],name:'Dragonfire'}};
+const FROST_NAMES={one6:'Little chill',twin6:'Twin snowflakes',big8:'Big freeze',big10:'Deep frost',twin8:'Twin blizzards',big12:'Glacier breath'};
+const diceDesc=s=>s.length===2?`two dice, 1 to ${s[0]} each`:`one die, 1 to ${s[0]}`;
+function duelOpt(key,extra={}){const f=FLAMES[key];const avg=f.sides.reduce((a,s)=>a+(s+1)/2,0);
+  return Object.assign({sides:f.sides,flame:extra.mode==='cold'?FROST_NAMES[key]:f.name,target:Math.max(15,Math.round(avg)*5),boss:false},extra);}
 function enterNode(id){
-  const n=S.run.nodes[id], prevPos=S.run.pos; S.run.pos=id;
-  if(S.run.visited.includes(id)){save();drawMap();return;}
-  S.run.from=prevPos; S.run.visited.push(id); save();
-  if(n.t==='duel')startDuel(duelOpt(n.layer>=3?'twin6':'one6'));
-  else if(n.t==='choice')chooseFlame(n.layer>=4?['twin8','big12']:(Math.random()<.5?['twin6','big8']:['one6','big10']));
-  else if(n.t==='boss')startDuel(duelOpt('twin8',{boss:true}));
-  else startSearch(n.layer);
+  const R=S.run,n=R.nodes[id],prev=R.pos;
+  if(n.t==='sign'){const sg=SIGNS[n.sign];overlay(`<div class="big">🚧</div><h2>${sg.title}</h2><div>${sg.text}</div>`,[['Back to the map','',null]]);return;}
+  if(n.t==='boss'&&(R.bossRest[id]||0)>0){say('bossResting');
+    overlay(`<div class="big">💤</div><h2>${REGIONS[n.region].boss.n.replace(/^the /,'The ')} is resting</h2><div>Come back after ${R.bossRest[id]} more adventure${R.bossRest[id]>1?'s':''}.</div>`,[['OK','',null]]);return;}
+  if(n.t==='exit'||n.t==='back'){
+    if(!R.visited.includes(id))R.visited.push(id);
+    R.pos=n.to; if(!R.visited.includes(n.to))R.visited.push(n.to); save(); goMap();
+    if(n.t==='exit')setTimeout(()=>say('frostWelcome',5000),600); return;}
+  const first=!R.visited.includes(id);
+  R.pos=id; if(first)R.visited.push(id);
+  if(n.t==='start'||n.cleared){save();drawMap();return;}
+  R.from=prev; R.newVisit=first; save();
+  startEncounter(n);
+}
+function startEncounter(n){
+  const reg=n.region, mode=REGIONS[reg].mode, late=n.layer>=(reg==='forest'?4:3);
+  if(n.t==='duel')startDuel(duelOpt(late?(reg==='forest'?'twin6':'big8'):'one6',{mode}));
+  else if(n.t==='choice')chooseFlame(n.layer>=6?['twin8','big12']:(Math.random()<.5?['twin6','big8']:['one6','big10']),mode);
+  else if(n.t==='boss')startDuel(duelOpt('twin8',{boss:true,mode,rival:REGIONS[reg].boss}));
+  else if(n.t==='search')startSearch(searchCfg(reg,late));
+  else if(n.t==='rhyme')startRhyme(reg,late);
 }
 trainBtn.onclick=()=>{if(S.run.prot<3||(S.run.arch||0)>=MAX_ARCH)return;S.run.prot-=3;S.run.arch=(S.run.arch||0)+1;save();updateHud();say('archer',4000);};
-function chooseFlame(keys){
-  say('choice',6000);
+function chooseFlame(keys,mode){
+  const cold=mode==='cold';
+  say(cold?'choiceCold':'choice',6000);
   const box=document.getElementById('overlayBox');
-  box.innerHTML=`<div class="big">🎲</div><h2>Choose your flame!</h2><div class="small">Your rival has to use the same one. Or let the rival pick, and bring an archer.</div><div class="row" id="flameRow"></div>`;
+  box.innerHTML=`<div class="big">🎲</div><h2>Choose your ${cold?'frost':'flame'}!</h2><div class="small">Your rival has to use the same one. Or let the rival pick, and bring an archer.</div><div class="row" id="flameRow"></div>`;
   keys.forEach(k=>{const f=FLAMES[k];const b=document.createElement('button');b.className='btn';
     b.style.cssText='display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 26px;min-width:220px';
     b.innerHTML=`<div style="display:flex;gap:8px">${f.sides.map(s=>`<div class="die" style="width:64px;height:64px;font-size:22px">1–${s}</div>`).join('')}</div>
-      <div style="font-size:24px">${f.name}</div><div class="small">${f.desc}</div>`;
-    b.onclick=()=>{document.getElementById('overlay').classList.remove('on');startDuel(duelOpt(k,{archer:false}));};
+      <div style="font-size:24px">${cold?FROST_NAMES[k]:f.name}</div><div class="small">${diceDesc(f.sides)}</div>`;
+    b.onclick=()=>{document.getElementById('overlay').classList.remove('on');startDuel(duelOpt(k,{mode,archer:false}));};
     box.querySelector('#flameRow').appendChild(b);});
   if((S.run.arch||0)>0){const b=document.createElement('button');b.className='btn gold';
     b.style.cssText='display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 26px;min-width:220px';
     b.innerHTML=`<div style="font-size:44px">🏹</div><div style="font-size:24px">Rival picks</div><div style="font-size:15px">bring an archer instead</div>`;
     b.onclick=()=>{document.getElementById('overlay').classList.remove('on');
-      const k=keys[Math.floor(Math.random()*keys.length)];startDuel(duelOpt(k,{archer:true}));};
+      const k=keys[Math.floor(Math.random()*keys.length)];startDuel(duelOpt(k,{mode,archer:true}));};
     box.querySelector('#flameRow').appendChild(b);}
   document.getElementById('overlay').classList.add('on');
 }
-function finishEncounter(){
+function finishEncounter(opts={}){
+  const R=S.run,n=R.nodes[R.pos];
+  if(opts.bossLost){R.bossRest[n.id]=3; if(R.from!=null)R.pos=R.from;}
+  else if(!PLAIN.includes(n.t)){n.cleared=true;n.fresh=false;R.cleared=R.cleared.filter(x=>x!==n.id);R.cleared.push(n.id);}
   tickRest();
-  if(S.run.nodes[S.run.pos].t==='boss'){
-    say('journeyEnd',5000);
-    overlay(`<div class="big">🏆</div><h2>Journey complete!</h2><div>Badges so far: 🔮 ${S.wiz} · 📜 ${S.sch} · 🪶 ${S.quill}</div>`,
-      [['Wardrobe','',()=>{newRun();openWardrobe();}],['New journey','fire',()=>{newRun();goMap();}]]);
-  } else goMap();
+  for(const k in R.bossRest){R.bossRest[k]--; if(R.bossRest[k]<=0)delete R.bossRest[k];}
+  // encounters refresh through play: oldest cleared stop in this region comes back, keeping the 4 most recent cleared
+  const pool=R.cleared.filter(id=>R.nodes[id].region===n.region&&R.nodes[id].t!=='boss');
+  if(pool.length>4){const o=R.nodes[pool[0]];o.cleared=false;o.fresh=true;R.cleared=R.cleared.filter(x=>x!==o.id);}
+  save(); goMap();
 }
 function resting(t){return ((S.run&&S.run.rest)||[]).filter(r=>r.t===t).reduce((a,r)=>a+r.n,0);}
 function addRest(t,n,left=2){if(!S.run.rest)S.run.rest=[];S.run.rest.push({t,n,left});save();updateHud();}
@@ -521,28 +614,37 @@ function useProtector(){
   if(!S.run||S.run.prot<1)return false; S.run.prot--; addRest('prot',1,4); say('skip'); return true;
 }
 
-// ---------- Heat duel ----------
+// ---------- Duels (heat = adding up, cold = taking away) ----------
 const RIVALS=[{n:'Cinder the Cautious',c:'red'},{n:'Blaze the Bold',c:'gold'},{n:'Smoulder',c:'black'},{n:'Puff the Reckless',c:'teal'}];
+const RIVALS_COLD=[{n:'Sleet',c:'blue'},{n:'Icicle the Cautious',c:'teal'},{n:'Brr the Bold',c:'black'},{n:'Frostbite',c:'purple'}];
 let D;
 function startDuel(opt){
-  const rv=opt.boss?{n:'Elder Emberclaw',c:'purple'}:RIVALS[Math.floor(Math.random()*RIVALS.length)];
-  D={...opt,p:0,r:0,rival:rv,rolls:[],busy:false,answer:''};
-  duelTitle.textContent=opt.boss?'Elder heat duel!':'Heat duel';
-  pName.textContent=S.name||'You'; rName.textContent=rv.n;
+  const cold=opt.mode==='cold';
+  const list=cold?RIVALS_COLD:RIVALS;
+  const rv=opt.rival||list[Math.floor(Math.random()*list.length)];
+  const start=cold?opt.target:0;
+  D={...opt,cold,p:start,r:start,rival:rv,rolls:[],busy:false,answer:''};
+  duelTitle.textContent=(opt.boss?'Boss: ':'')+(cold?'Cold duel':'Heat duel');
+  pName.textContent=S.name||'You'; rName.textContent=rv.n.replace(/^the /,'The ');
   pDragon.innerHTML=dragonSVG(S.colour,130); rDragon.innerHTML=dragonSVG(rv.c,130,true);
-  targetNum.textContent=opt.target;
-  dice.innerHTML=''; question.textContent=(opt.flame?opt.flame+': ':'')+(opt.sides.length===2?'roll two dice and add them both!':'roll the die!');
+  document.getElementById('target').innerHTML=cold?`First to <b>0</b> ❄ wins`:`First to <b>${opt.target}</b> 🔥 wins`;
+  dice.innerHTML='';
+  question.textContent=(opt.flame?opt.flame+': ':'')+(opt.sides.length===2?'roll two dice':'roll the die')+(cold?' and take it away!':' and add it on!');
   log.textContent=''; answerArea.style.display='none'; rollBtn.style.display='';
-  skipDuel.style.visibility=S.run.prot>0?'visible':'hidden';
+  skipDuel.style.visibility=(S.run.prot>0&&!opt.boss)?'visible':'hidden';
   D.adv=false;D.divert=false;D.archerUsed=false;D.archer=opt.archer!==false; updateArcherBtns();
-  if(!D.archer&&S.run.arch>0)log.textContent='You chose the flame, so your archers stay at camp.';
-  renderStones(); show('duel'); setTimeout(()=>say(opt.boss?'boss':'duelStart',5000),300);
+  if(!D.archer&&S.run.arch>0)log.textContent=`You chose the ${cold?'frost':'flame'}, so your archers stay at camp.`;
+  renderStones(); show('duel');
+  setTimeout(()=>say(opt.boss?(cold?'frostBoss':'boss'):(cold?'coldStart':'duelStart'),5000),300);
 }
-function heatColour(v,t){const f=Math.min(1,v/t);return `hsl(${20+ (1-f)*0},${Math.round(f*90)}%,${30+f*25}%)`;}
+function heatColour(v,t){const f=Math.min(1,v/t);return `hsl(20,${Math.round(f*90)}%,${30+f*25}%)`;}
+function progress(v){return D.cold?Math.min(1,Math.max(0,(D.target-v)/D.target)):Math.min(1,v/D.target);}
 function renderStones(){
-  [['p',D.p],['r',D.r]].forEach(([k,v])=>{const s=document.getElementById(k+'Stone');s.textContent=v;
-    s.style.background=heatColour(v,D.target); s.style.boxShadow=v>=D.target*.6?`0 0 ${v/D.target*40}px #ff7a2f`:'none';
-    document.getElementById(k+'Meter').style.width=Math.min(100,v/D.target*100)+'%';});
+  [['p',D.p],['r',D.r]].forEach(([k,v])=>{const s=document.getElementById(k+'Stone'),f=progress(v);s.textContent=v;
+    if(D.cold){s.style.background=`hsl(${25+175*f},${40+45*f}%,${38+32*f}%)`;s.style.boxShadow=f>=.6?`0 0 ${f*40}px #9fd8ff`:'none';}
+    else{s.style.background=heatColour(v,D.target);s.style.boxShadow=f>=.6?`0 0 ${f*40}px #ff7a2f`:'none';}
+    const m=document.getElementById(k+'Meter');m.style.width=f*100+'%';
+    m.style.background=D.cold?'linear-gradient(90deg,#b7e3ff,#3a9bff)':'';});
 }
 async function rollAnim(sides,sets=1){
   dice.classList.toggle('two',sets>1||sides.length*sets>2);
@@ -563,13 +665,19 @@ function useArcher(kind){if(!S.run.arch||!D.archer||D.archerUsed)return;S.run.ar
   save();updateHud();say(kind==='adv'?'aim':'divert');updateArcherBtns();
   log.textContent='🏹 Your archer is helping this duel';}
 aimBtn.onclick=()=>useArcher('adv');
-divertBtn.onclick=()=>useArcher('divert');
+divertBtn.onclick=()=>{useArcher('divert');};
 rollBtn.onclick=async()=>{
   if(D.busy)return; D.busy=true; rollBtn.style.display='none'; archerRow.style.display='none';
   if(D.adv){const sets=await rollAnim(D.sides,2);question.textContent='Tap the roll you want to keep!';
     const i=await pickGroup();D.rolls=sets[i];D.adv=false;}
   else D.rolls=(await rollAnim(D.sides))[0];
-  question.innerHTML=`Your stone is <b>${D.p}</b>.<br>You rolled <b>${D.rolls.join('</b> and <b>')}</b>.<br>How hot is it now?`;
+  if(D.dead)return;
+  const total=sum(D.rolls);
+  if(D.cold&&total>=D.p){
+    question.innerHTML=`Your stone is <b>${D.p}</b>.<br>You rolled <b>${total}</b>, that's more than enough!<br>❄ Frozen solid! ❄`;
+    D.p=0; renderStones(); say('frozen',3000); D.busy=false; return setTimeout(()=>endDuel(true),1600);}
+  question.innerHTML=`Your stone is <b>${D.p}</b>.<br>You rolled <b>${D.rolls.join('</b> and <b>')}</b>.<br>`+
+    (D.cold?'Take it away. What is left?':'How hot is it now?');
   D.answer=''; answerShow.textContent=''; answerArea.classList.remove('shake'); answerArea.style.display='flex'; quillPanel.classList.remove('on'); pad.style.display='grid';
   answerShow.classList.remove('ready'); void answerShow.offsetWidth; answerShow.classList.add('ready');
   D.busy=false;
@@ -592,38 +700,50 @@ quillOk.onclick=()=>{q1.blur();q2.blur();checkAnswer((q1.value+q2.value).replace
 
 function checkAnswer(ans,quill){
   if(!ans)return;
-  const correct=D.p+D.rolls.reduce((a,b)=>a+b,0);
+  const total=sum(D.rolls), correct=D.cold?D.p-total:D.p+total;
   if(+ans!==correct){answerArea.classList.remove('shake');void answerArea.offsetWidth;answerArea.classList.add('shake');
     say('wrong'); D.answer=''; answerShow.textContent=''; if(quill){q1.value='';q2.value='';} return;}
   if(quill){S.quill++; log.textContent='🪶 +1 quill point!';
     if(!S.quillUsed){S.quillUsed=true;setTimeout(()=>say('quillFirst',5500),900);} save();}
   else log.textContent='';
-  if(Math.random()<.45)say('right',2500);
+  if(Math.random()<.45)say(D.cold?'rightCold':'right',2500);
   D.p=correct; answerArea.style.display='none'; quillPanel.classList.remove('on'); renderStones();
-  if(D.p>=D.target)return setTimeout(()=>endDuel(true),800);
+  if(D.cold?D.p<=0:D.p>=D.target)return setTimeout(()=>endDuel(true),800);
   setTimeout(rivalTurn,900);
 }
 async function rivalTurn(){
   if(D.dead)return;
-  question.textContent=`${D.rival.n} rolls...`;
+  const name=rName.textContent;
+  question.textContent=`${name} rolls...`;
   let v;
   if(D.divert){const sets=await rollAnim(D.sides,2);const i=sum(sets[0])<=sum(sets[1])?0:1;
     dice.children[1-i].classList.add('faded');v=sets[i];D.divert=false;
-    question.textContent=`Diverted! ${D.rival.n} must keep the smaller roll...`;await new Promise(r=>setTimeout(r,1300));}
+    question.textContent=`Diverted! ${name} must keep the smaller roll...`;await new Promise(r=>setTimeout(r,1300));}
   else v=(await rollAnim(D.sides))[0];
   if(D.dead)return;
-  const t=sum(v);
-  question.textContent=`${D.rival.n}: ${D.r} + ${v.join(' + ')} = ${D.r+t}`;
-  D.r+=t; renderStones();
-  if(D.r>=D.target)return setTimeout(()=>endDuel(false),900);
-  setTimeout(()=>{rollBtn.style.display='';question.innerHTML=`${D.rival.n}: ${D.r-t} + ${v.join(' + ')} = <b>${D.r}</b><br><span style="color:var(--gold)">It's your turn!</span>`;updateArcherBtns();},700);
+  const t=sum(v), before=D.r;
+  D.r=D.cold?Math.max(0,before-t):before+t;
+  const line=D.cold?`${name}: ${before} − ${v.join(' − ')} = <b>${D.r}</b>`:`${name}: ${before} + ${v.join(' + ')} = <b>${D.r}</b>`;
+  question.innerHTML=line; renderStones();
+  if(D.cold?D.r<=0:D.r>=D.target)return setTimeout(()=>endDuel(false),900);
+  setTimeout(()=>{rollBtn.style.display='';question.innerHTML=`${line}<br><span style="color:var(--gold)">It's your turn!</span>`;updateArcherBtns();},700);
 }
 function endDuel(win){
   if(D.dead)return;
+  const name=rName.textContent;
+  if(D.boss){
+    if(win){S.wiz+=2;save();say('bossWin',5000);
+      const msg=D.cold?`The Frost Wyrm shivers... and melts into a puddle of respect.<br>The Frostpeaks are yours! More of the world is coming soon.`
+        :`Elder Emberclaw bows her great head.<br>"The way to the Frostpeaks is open, little one."`;
+      overlay(`<div class="big">🏆</div><h2>You beat ${name}!</h2><div>${msg}</div><div>+2 Wizard badges</div>`,[['Onward!','fire',()=>finishEncounter()]]);}
+    else{say('bossLost',5000);
+      overlay(`<div class="big">💨</div><h2>${name} is too strong today</h2><div>The boss needs a rest now. Explore a little, gather friends, and come back for a rematch!</div>`,
+        [['Back to the map','fire',()=>finishEncounter({bossLost:true})]]);}
+    return;}
   if(win){S.wiz++;save();say('duelWin',4500);
-    overlay(`<div class="big">🔥🔮</div><h2>You win!</h2><div>+1 Wizard badge</div>`,[['Onward!','fire',finishEncounter]]);}
+    overlay(`<div class="big">${D.cold?'❄️':'🔥'}🔮</div><h2>You win!</h2><div>+1 Wizard badge</div>`,[['Onward!','fire',()=>finishEncounter()]]);}
   else{say('duelLose',4500);
-    overlay(`<div class="big">💨</div><h2>${D.rival.n} got there first</h2><div>No badge this time, but the bard is writing a revenge song.</div>`,[['Onward!','fire',finishEncounter]]);}
+    overlay(`<div class="big">💨</div><h2>${name} got there first</h2><div>No badge this time, but the bard is writing a revenge song.</div>`,[['Onward!','fire',()=>finishEncounter()]]);}
 }
 skipDuel.onclick=()=>{if(useProtector())finishEncounter();};
 
@@ -635,13 +755,11 @@ const WORDS_HARD=['DRAGON','CASTLE','FOREST','SWORD','CROWN','MAGIC','SPELL','SH
   'FLAME','EMBER','SMOKE','TROLL','GHOST','HORSE','EAGLE','TIGER','SNAKE','APPLE','BREAD','ROBOT','PLANET','ROCKET','POTION',
   'WIZARD','BANDIT','GOBLIN','TREASURE','LANTERN','PUZZLE','CANDLE','MARKET','BRIDGE','WAGON','GIANT','HONEY'];
 let W;
-function startSearch(layer=1){
-  const hard=layer>=3, size=hard?8:7;
-  const dirs=hard?[[0,1],[1,0],[1,1],[-1,1]]:[[0,1],[1,0]];
-  const pool=(hard?WORDS_HARD:[...WORDS_EASY.filter(w=>w.length===4),...WORDS_HARD.filter(w=>w.length<=5)])
-    .filter(w=>w.length<=size).sort(()=>Math.random()-.5);
+function startSearch(cfg){
+  const size=cfg.size, dirs=cfg.dirs, hard=!!cfg.diag;
+  const pool=wordPool(cfg);
   const grid=Array.from({length:size},()=>Array(size).fill(null)); const placed=[], posOf={};
-  const want=hard?6:5;
+  const want=cfg.want;
   for(const w of pool){if(placed.length>=want)break;
     for(let tries=0;tries<80;tries++){const d=dirs[Math.floor(Math.random()*dirs.length)];
       const r0=d[0]>=0?0:w.length-1, r1=d[0]>0?size-w.length:size-1, c1=d[1]>0?size-w.length:size-1;
@@ -722,6 +840,95 @@ searchDone.onclick=()=>{S.sch++;const n=W.pending;S.run.prot+=n;save();updateHud
     [['Onward!','fire',finishEncounter]]);};
 skipSearch.onclick=()=>{if(useProtector())finishEncounter();};
 
+// ---------- Rhyme rescue ----------
+const RHYMES={
+ forest:[
+  {a:'A tiny brown frog',b:'sat on a',ans:'log',em:'🪵',opts:[['cup','☕'],['tree','🌳']]},
+  {a:'The bard has a hat',b:'that was chewed by a',ans:'rat',em:'🐀',opts:[['dog','🐶'],['owl','🦉']]},
+  {a:'I hear a big roar',b:'right outside the',ans:'door',em:'🚪',opts:[['tree','🌳'],['moon','🌙']]},
+  {a:'The dragon can fly',b:'way up in the',ans:'sky',em:'☁️',opts:[['sea','🌊'],['box','📦']]},
+  {a:'My fire is hot',b:'it bubbles the',ans:'pot',em:'🍲',opts:[['cup','☕'],['fish','🐟']]},
+  {a:'Look at the fox',b:'asleep in a',ans:'box',em:'📦',opts:[['tree','🌳'],['bed','🛏️']]},
+  {a:'The bandit was sad',b:'but now he is',ans:'glad',em:'😊',opts:[['cross','😠'],['sleepy','😴']]},
+  {a:'A dragon called Fred',b:'went straight to his',ans:'bed',em:'🛏️',opts:[['cave','🕳️'],['boat','⛵']]},
+  {a:'I found a big stone',b:'as old as a',ans:'bone',em:'🦴',opts:[['rock','🪨'],['log','🪵']]},
+  {a:'The bard lost his lute',b:'it fell in his',ans:'boot',em:'👢',opts:[['bag','👜'],['hat','🎩']]},
+  {a:'Look at that bug',b:'having tea from a',ans:'mug',em:'☕',opts:[['pot','🍲'],['box','📦']]},
+  {a:'The goat in the boat',b:'is wearing a',ans:'coat',em:'🧥',opts:[['hat','🎩'],['sock','🧦']]},
+  {a:'The big hungry bear',b:'sat down on a',ans:'chair',em:'🪑',opts:[['log','🪵'],['bed','🛏️']]},
+  {a:'I see a red hen',b:'she is counting to',ans:'ten',em:'🔟',opts:[['six','6️⃣'],['two','2️⃣']]},
+  {a:'A dragon named Kate',b:'ate soup from a',ans:'plate',em:'🍽️',opts:[['bowl','🥣'],['cup','☕']]},
+  {a:'The owl in the tree',b:'is hooting at',ans:'me',em:'👋',opts:[['you','👉'],['us','👫']]}],
+ frost:[
+  {a:'The flakes of snow',b:'fall soft and',ans:'slow',em:'🐌',opts:[['fast','🐇'],['white','⬜']]},
+  {a:'The ice is so cold',b:'it shines like',ans:'gold',em:'🪙',opts:[['glass','🪟'],['snow','❄️']]},
+  {a:'A polar bear',b:'jumped high in the',ans:'air',em:'💨',opts:[['snow','❄️'],['sea','🌊']]},
+  {a:'The wind will blow',b:'across the white',ans:'snow',em:'❄️',opts:[['ice','🧊'],['hill','⛰️']]},
+  {a:'My nose is red',b:'so I ride my',ans:'sled',em:'🛷',opts:[['bike','🚲'],['boat','⛵']]},
+  {a:'The mountain is tall',b:'let\'s make a snow',ans:'ball',em:'⚪',opts:[['man','⛄'],['flake','❄️']]},
+  {a:'A fish in the lake',b:'is wide',ans:'awake',em:'👀',opts:[['asleep','😴'],['cold','🥶']]},
+  {a:'The dogs pull the sled',b:'with noses so',ans:'red',em:'🔴',opts:[['cold','🥶'],['wet','💧']]},
+  {a:'Brr, what a chill',b:'let\'s ski down the',ans:'hill',em:'⛰️',opts:[['lake','🏞️'],['road','🛣️']]},
+  {a:'We built an igloo',b:'with room for us',ans:'two',em:'2️⃣',opts:[['three','3️⃣'],['four','4️⃣']]},
+  {a:'The frost giant\'s toe',b:'is stuck in the',ans:'snow',em:'❄️',opts:[['ice','🧊'],['mud','🟤']]},
+  {a:'The eagle can see',b:'a seal under the',ans:'sea',em:'🌊',opts:[['ice','🧊'],['rock','🪨']]},
+  {a:'My mittens are wet',b:'I\'ll dry them, you',ans:'bet',em:'👍',opts:[['know','💭'],['see','👀']]},
+  {a:'The yeti is shy',b:'he waves us good',ans:'bye',em:'👋',opts:[['night','🌙'],['day','☀️']]}]};
+let RH;
+function startRhyme(reg,late){
+  RH={pool:[...RHYMES[reg]].sort(()=>Math.random()-.5).slice(0,4),i:0,stars:0,late};
+  skipRhyme.style.visibility=S.run.prot>0?'visible':'hidden';
+  show('rhyme'); renderVerse(); setTimeout(()=>say('rhymeStart',6000),300);
+}
+function renderVerse(){
+  const v=RH.pool[RH.i]; RH.firstTry=true; RH.done=false;
+  verse.innerHTML=`${v.a},<br>${v.b} <span class="blank" id="blank">?</span>`;
+  const opts=[[v.ans,v.em],...v.opts].sort(()=>Math.random()-.5);
+  rhymeOpts.innerHTML='';
+  opts.forEach(([w,e])=>{const b=document.createElement('button');b.className='ropt';
+    b.innerHTML=(RH.late?'':`<span class="em">${e}</span>`)+`<span>${w}</span>`;b.onclick=()=>pickRhyme(b,w);rhymeOpts.appendChild(b);});
+  rhymeInfo.textContent=`Verse ${RH.i+1} of ${RH.pool.length}`+(RH.late?' · no pictures this time!':'');
+  rhymeStars.textContent='⭐'.repeat(RH.stars)+'☆'.repeat(RH.pool.length-RH.i);
+}
+function pickRhyme(b,w){
+  if(RH.done)return; const v=RH.pool[RH.i];
+  if(w!==v.ans){b.classList.add('no');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');RH.firstTry=false;say('rhymeWrong',3500);return;}
+  RH.done=true; if(RH.firstTry)RH.stars++;
+  const bl=document.getElementById('blank'); bl.textContent=v.ans; bl.classList.add('got');
+  rhymeStars.textContent='⭐'.repeat(RH.stars)+'☆'.repeat(RH.pool.length-RH.i-1);
+  say('rhymeRight',2500);
+  setTimeout(()=>{RH.i++; if(RH.i>=RH.pool.length)endRhyme(); else renderVerse();},1500);
+}
+function endRhyme(){
+  S.sch++; let joined=false;
+  if(RH.stars>=3&&S.run.prot+resting('prot')<MAX_PROT){S.run.prot++;joined=true;}
+  save();updateHud();say('rhymeWin',4500);
+  overlay(`<div class="big">🎵${'⭐'.repeat(RH.stars)}</div><h2>The song is finished!</h2>
+    <div>${joined?'A bandit in the crowd loved it so much, they joined your party as a shield guard!':'The bard takes a bow. The crowd claps.'}</div><div>+1 Scholar badge</div>`,
+    [['Onward!','fire',()=>finishEncounter()]]);
+}
+skipRhyme.onclick=()=>{if(useProtector())finishEncounter();};
+hearBtn.onclick=()=>{try{const v=RH.pool[RH.i];speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(`${v.a}. ${v.b}... hmm hmm?`);u.rate=.8;u.lang='en-GB';speechSynthesis.speak(u);}catch(e){}};
+
+// ---------- Word search settings per region ----------
+const FOREST_WORDS=['FOX','OWL','BAT','LOG','ELK','BEE','ANT','TREE','LEAF','MOSS','FERN','BARK','NEST','DEER','BEAR','WOLF','FROG','LUTE','BARD',
+  'CAMP','TENT','SONG','FIRE','PATH','TWIG','ACORN','BERRY','STUMP','ROBIN','SNAIL','BADGER','FOREST'];
+const FROST_WORDS=['SNOW','ICE','COLD','SLED','FROST','FLAKE','PEAK','YETI','SKATE','WOLF','BEAR','SEAL','FISH','POLAR','IGLOO','CHILL','WIND',
+  'HAIL','STORM','CLIFF','CAVE','FROZEN','PINE','HILL','BOOT','SCARF','GLOVE','HUSKY','MELT','MITTEN','WINTER','ICICLE','SKI','FUR'];
+function searchCfg(reg,late){
+  const H=[[0,1],[1,0]], DI=[[0,1],[1,0],[1,1]];
+  if(reg==='forest')return late?{size:7,min:4,max:5,dirs:H,want:5,theme:FOREST_WORDS}:{size:6,min:3,max:4,dirs:H,want:5,theme:FOREST_WORDS};
+  return late?{size:7,min:4,max:6,dirs:DI,want:6,theme:FROST_WORDS,diag:true}:{size:7,min:4,max:5,dirs:H,want:5,theme:FROST_WORDS};
+}
+function wordPool(cfg){
+  const ok=w=>w.length>=cfg.min&&w.length<=cfg.max&&w.length<=cfg.size;
+  const th=cfg.theme.filter(ok).sort(()=>Math.random()-.5);
+  const gen=[...new Set([...WORDS_EASY,...WORDS_HARD])].filter(w=>ok(w)&&!cfg.theme.includes(w)).sort(()=>Math.random()-.5);
+  const out=[];while(th.length||gen.length){if(th.length)out.push(th.shift());if(th.length)out.push(th.shift());if(gen.length)out.push(gen.shift());}
+  return out;
+}
+
 // ---------- Wardrobe ----------
 function canAfford(cost){return !cost||Object.entries(cost).every(([k,v])=>S[k]>=v);}
 function pay(cost){Object.entries(cost||{}).forEach(([k,v])=>S[k]-=v);}
@@ -750,8 +957,8 @@ document.querySelectorAll('.retreatBtn').forEach(b=>b.onclick=()=>overlay(
   [['Keep going','',null],['Retreat','fire',retreat]]));
 function retreat(){
   if(D)D.dead=true;
-  const id=S.run.pos; S.run.visited=S.run.visited.filter(x=>x!==id);
-  S.run.pos=(S.run.from!=null&&S.run.visited.includes(S.run.from))?S.run.from:0; save();
+  const R=S.run,id=R.pos; if(R.newVisit)R.visited=R.visited.filter(x=>x!==id);
+  R.pos=(R.from!=null&&R.visited.includes(R.from))?R.from:R.pos; save();
   goMap(); setTimeout(()=>say('retreat',3500),500);
 }
 answerArea.addEventListener('animationend',()=>answerArea.classList.remove('shake'));

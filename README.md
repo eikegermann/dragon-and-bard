@@ -12,10 +12,13 @@ Progress is saved in the browser on that device.
 
 ## What's in the prototype
 
-- **Map:** a branching path through a foggy forest. You only see the next stops. Spotted stops stay visible and you can walk back.
-- **Heat duel (Wizard 🔮):** dice-adding race against a rival dragon. Answer by number pad or the quill 🪶 (Apple Pencil handwriting). Some stops let you choose your flame (dice size).
-- **Bandit ambush (Scholar 📜):** word search. Extra words win over bandits, who join as shield guards 🛡️.
-- **Comrades:** shield guards can scout words or skip a challenge. Three guards train into an archer 🏹 (Steady aim / Diversion in duels). Helpers rest ⛺ after helping.
+- **World map:** two regions so far, the **Whispering Forest** (about 20 stops) and the **Frostpeaks**, discovered through fog. Spotted stops stay visible; you can walk back. Other exits show "closed for construction" signs.
+- **Bosses gate regions:** beat Elder Emberclaw to open the Frostpeaks. Losing costs nothing but time: the boss rests for a couple of adventures, then you can try again.
+- **Encounters refresh through play:** finishing an encounter brings the oldest cleared stop in that region back with a new puzzle (✨).
+- **Heat duels (Forest, 🔥):** dice-adding race. **Cold duels (Frostpeaks, ❄️):** start high, subtract to reach 0 first. Answer by number pad or the quill 🪶. Some stops let you choose your flame/frost (dice size).
+- **Rhyme rescue (🎵):** finish the bard's song by picking the rhyming word. Pictures help at first; later verses are words only. 🔊 reads the verse aloud.
+- **Bandit ambush (📜):** word search, themed per region; extra words win over bandits who join as shield guards 🛡️.
+- **Comrades:** shield guards scout words or skip a challenge; three train into an archer 🏹. Helpers rest ⛺ after helping.
 - **Wardrobe:** badges and quill points unlock dragon colours and bard hats.
 - **Retreat** from any puzzle; **⟲** on the map starts over.
 
