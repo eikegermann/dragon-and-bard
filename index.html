@@ -304,7 +304,7 @@ const LINES={
   map:[{id:'map_01',t:"Where to next? Pick a path, I'll follow. Mostly."},{id:'map_02',t:"Ooh, so many paths. You choose, I'll carry the lute."}],
   choice:[{id:'choice_01',t:"Choose your flame! Two little ones, or one big one? The other dragon has to use the same."}],
   boss:[{id:'boss_01',t:"That's the Elder. Her flames are BIG. Eight-sided big. I'll just... hide behind you."}],
-  duelStart:[{id:'duel_01',t:"A heat duel! Roll the die and add it to your stone. First to the target wins!"}],
+  duelStart:[{id:'duel_01',t:"A heat duel! Roll the die and add that much heat to your stone. First to the target wins!"}],
   wrong:[
     {id:'wrong_01',t:"Are you sure? Please check again, I don't want to be toast..."},
     {id:'wrong_02',t:"Hmm. My lute says that number's a bit off-key."},
@@ -328,7 +328,7 @@ const LINES={
   divert:[{id:'divert_01',t:"Look over there! Hehe, he's distracted. He has to keep the smaller roll."}],
   full:[{id:'full_01',t:"Our camp is full of shield guards! Maybe train some into archers?"}],
   hint:[{id:'hint_01',t:"Our shield guards used to be bandits. They know these woods. Which word should they sniff out?"}],
-  coldStart:[{id:'cold_01',t:"A cold duel! Roll and take it away from your stone. First to zero wins!"}],
+  coldStart:[{id:'cold_01',t:"A cold duel! Roll and take that much heat away from your stone. First to zero wins!"}],
   frozen:[{id:'frozen_01',t:"Frozen solid! Brrr, that's how it's done!"}],
   rightCold:[{id:'rightcold_01',t:"Brrr! Nicely done!"},{id:'rightcold_02',t:"Ice cold maths!"},{id:'rightcold_03',t:"Chilly AND correct!"}],
   frostBoss:[{id:'frostboss_01',t:"The Frost Wyrm! Its breath could freeze a waterfall. Eight-sided dice... brrr."}],
@@ -674,10 +674,10 @@ rollBtn.onclick=async()=>{
   if(D.dead)return;
   const total=sum(D.rolls);
   if(D.cold&&total>=D.p){
-    question.innerHTML=`Your stone is <b>${D.p}</b>.<br>You rolled <b>${total}</b>, that's more than enough!<br>❄ Frozen solid! ❄`;
+    question.innerHTML=`Your stone's heat is <b>${D.p}</b>.<br>You rolled <b>${total}</b>, that's enough to cool it all away!<br>❄ Frozen solid! ❄`;
     D.p=0; renderStones(); say('frozen',3000); D.busy=false; return setTimeout(()=>endDuel(true),1600);}
-  question.innerHTML=`Your stone is <b>${D.p}</b>.<br>You rolled <b>${D.rolls.join('</b> and <b>')}</b>.<br>`+
-    (D.cold?'Take it away. What is left?':'How hot is it now?');
+  question.innerHTML=`Your stone's heat is <b>${D.p}</b>.<br>You rolled <b>${D.rolls.join('</b> and <b>')}</b>.<br>`+
+    (D.cold?'Cool it down: how much heat is left?':'Heat it up: how much heat now?');
   D.answer=''; answerShow.textContent=''; answerArea.classList.remove('shake'); answerArea.style.display='flex'; quillPanel.classList.remove('on'); pad.style.display='grid';
   answerShow.classList.remove('ready'); void answerShow.offsetWidth; answerShow.classList.add('ready');
   D.busy=false;
