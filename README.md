@@ -2,7 +2,7 @@
 
 A learning adventure for kids: a young dragon travels with a nervous bard, solving maths, reading and chance puzzles dressed up as duels, ambushes and quests.
 
-Built first for one six-year-old, played on an iPad. Prototype stage: simple placeholder art, no sound yet.
+Built first for one young dragon fan, played on an iPad. Prototype stage: simple placeholder art, no sound yet.
 
 ## Play
 
