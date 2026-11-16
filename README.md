@@ -6,9 +6,11 @@ Built first for one young dragon fan, played on an iPad. Prototype stage: simple
 
 ## Play
 
-Open `index.html` in any modern browser. On an iPad, open it in Safari and use **Share → Add to Home Screen** for full-screen play.
+Play online at **https://eikegermann.github.io/dragon-and-bard/** (once GitHub Pages is on). On an iPad, open it in Safari and use **Share → Add to Home Screen** for full-screen play.
 
 Progress is saved in the browser on that device.
+
+To share a single offline file, run `python tools/bundle.py` and hand out `dist/dragon-and-bard.html`.
 
 ## What's in the prototype
 
@@ -21,6 +23,20 @@ Progress is saved in the browser on that device.
 - **Comrades:** shield guards scout words or skip a challenge; three train into an archer 🏹. Helpers rest ⛺ after helping.
 - **Wardrobe:** badges and quill points unlock dragon colours and bard hats.
 - **Retreat** from any puzzle; **⟲** on the map starts over.
+
+## Module sandbox
+
+`sandbox.html` (online: `/sandbox.html`) plays any encounter module on its own: pick a module and preset, edit the parameters, set the party, play, and get the results (outcome, rewards, first-try rate, time per answer). Give it a 👍/👎 with notes and copy the report into an issue. It never touches the game's save.
+
+## Code layout
+
+- `index.html`, `css/game.css`
+- `js/core.js`: save, bard lines, art, overlays, and the **module runner** (the interface every encounter uses)
+- `js/modules/*.js`: one file per encounter type (`duel`, `wordsearch`, `rhyme`). Each module takes parameters, uses the party through a small interface, logs every attempt with timing, and reports outcome and rewards.
+- `js/game.js`: world map, party, wardrobe, and the bridge between the game and the modules
+- `js/sandbox.js`: the sandbox
+- `tests/smoke.py`: plays every preset of every module to the end, plus a short game run (`pip install playwright && playwright install chromium`, then `python tests/smoke.py`)
+- `tools/bundle.py`: single-file build
 
 ## Design
 

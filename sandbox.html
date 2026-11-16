@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Dragon &amp; Bard · module sandbox</title>
+<link rel="stylesheet" href="css/game.css">
+<style>
+.sbwrap{flex:1;display:flex;gap:18px;padding:16px 16px 150px;overflow:auto;align-items:flex-start;flex-wrap:wrap}
+.sbcard{background:var(--panel);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;flex:1;min-width:320px}
+.sbcard h3{margin:0;font-size:20px}
+.sbcard label{display:flex;flex-direction:column;gap:4px;font-size:15px;color:var(--muted)}
+.sbcard label.chk{flex-direction:row;align-items:center;gap:8px;color:var(--ink)}
+.sbcard select,.sbcard input,.sbcard textarea{font:inherit;font-size:16px;border-radius:10px;border:0;padding:8px 10px;background:#fffaf0;color:#2a2340;-webkit-user-select:text;user-select:text}
+.sbcard input[type=number]{width:90px}
+.sbcard input[type=checkbox]{width:22px;height:22px}
+.sbcard textarea{font-family:ui-monospace,Menlo,monospace;font-size:14px;resize:vertical}
+.sbrow{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+#sbErr{color:var(--bad);font-weight:700;min-height:1em}
+#sbSummary{display:flex;flex-direction:column;gap:6px;font-size:18px}
+#sbSummary .big{font-size:44px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--panel2);border-radius:999px;padding:4px 12px;font-size:15px;font-weight:700}
+#sbLog{border-collapse:collapse;font-size:15px;width:100%}
+#sbLog th,#sbLog td{padding:5px 10px;border-bottom:1px solid #ffffff1f;text-align:left}
+#sbLog .ok{color:var(--good);font-weight:800}#sbLog .bad{color:var(--bad);font-weight:800}
+.hist{display:flex;flex-direction:column;gap:6px}
+.hist div{background:#0003;border-radius:10px;padding:6px 10px;font-size:15px}
+.btn.chosen{outline:4px solid var(--gold)}
+a.btn{text-decoration:none;display:inline-flex;align-items:center;color:var(--ink)}
+#sbSetup.on~#bard,#sbResults.on~#bard{display:none}
+</style>
+</head>
+<body>
+
+<section id="sbSetup" class="screen">
+  <div class="topbar"><b>🧪 Module sandbox</b><span class="spacer"></span><a class="btn ghost" href="index.html">Back to the game</a></div>
+  <div class="sbwrap">
+    <div class="sbcard">
+      <h3>Set up a scene</h3>
+      <label>Module <select id="sbModule"></select></label>
+      <label>Preset <select id="sbPreset"></select></label>
+      <label>Parameters (edit freely)<textarea id="sbParams" rows="9" spellcheck="false"></textarea></label>
+      <div class="sbrow">
+        <label>Shield guards <input type="number" id="sbGuards" min="0" max="9" value="3"></label>
+        <label>Archers <input type="number" id="sbArchers" min="0" max="3" value="1"></label>
+        <label>Party limit <input type="number" id="sbMax" min="0" max="12" value="6"></label>
+      </div>
+      <div class="sbrow">
+        <label>Dragon name <input id="sbName" value="Tester" maxlength="16"></label>
+        <label>Colour <select id="sbColour"></select></label>
+        <label class="chk"><input type="checkbox" id="sbFirstQuill" checked> First quill use</label>
+      </div>
+      <div id="sbErr"></div>
+      <button class="btn fire" id="sbPlay">▶ Play this scene</button>
+    </div>
+    <div class="sbcard">
+      <h3>This session</h3>
+      <div id="sbHistory" class="hist small">No runs yet.</div>
+      <div class="small">Nothing here touches the real game's save.</div>
+    </div>
+  </div>
+</section>
+
+<section id="sbResults" class="screen">
+  <div class="topbar"><b>🧪 Results</b><span class="spacer"></span><button class="btn ghost" id="sbBack">Back to setup</button></div>
+  <div class="sbwrap">
+    <div class="sbcard">
+      <div id="sbSummary"></div>
+      <h3>Every attempt</h3>
+      <table id="sbLog"></table>
+    </div>
+    <div class="sbcard">
+      <h3>Verdict</h3>
+      <div class="sbrow"><button class="btn" id="sbUp">👍 Keep it</button><button class="btn" id="sbDown">👎 Needs work</button></div>
+      <label>Notes<textarea id="sbNotes" rows="5" placeholder="What worked, what didn't, ideas..."></textarea></label>
+      <div class="sbrow"><button class="btn gold" id="sbCopy">📋 Copy report</button><button class="btn fire" id="sbAgain">▶ Play again</button></div>
+      <textarea id="sbReport" rows="10" readonly style="display:none"></textarea>
+    </div>
+  </div>
+</section>
+
+<!-- Encounter modules add their screens here -->
+<div id="stage"></div>
+
+<div id="overlay"><div id="overlayBox"></div></div>
+<div id="bard"><div id="bardSvg"></div><div id="bubble"></div></div>
+
+<script src="js/core.js"></script>
+<script src="js/modules/duel.js"></script>
+<script src="js/modules/wordsearch.js"></script>
+<script src="js/modules/rhyme.js"></script>
+<script src="js/sandbox.js"></script>
+</body>
+</html>
