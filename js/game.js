@@ -169,7 +169,8 @@ const GameHost={
     guards:()=>S.run.prot, archers:()=>S.run.arch||0,
     useGuards(n,restFor=2){if(S.run.prot<n)return false;S.run.prot-=n;addRest('prot',n,restFor);return true;},
     useArcher(){if(!(S.run.arch>0))return false;S.run.arch--;addRest('arch',1);return true;},
-    canRecruit(n=1){return S.run.prot+resting('prot')+n<=MAX_PROT;}},
+    canRecruit(n=1){return S.run.prot+resting('prot')+n<=MAX_PROT;},
+    ghosts:()=>0, useGhosts(){return false;}},   // ghost companions arrive with the Haunted Hollow
   isFirstQuill:()=>!S.quillUsed,
   retreat(){overlay(`<div class="big">↩</div><h2>Retreat?</h2><div>You'll go back to where you were. This puzzle starts fresh if you come back.</div>`,
     [['Keep going','',null],['Retreat','fire',()=>{Modules.abort();retreat();}]]);},

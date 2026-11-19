@@ -95,7 +95,38 @@ def play_rhyme(pg):
     return overlay_on(pg)
 
 
-PLAY = {'duel': play_duel, 'wordsearch': play_wordsearch, 'rhyme': play_rhyme}
+def play_clock(pg):
+    import math
+    def xy(box, deg, r):
+        a = math.radians(deg - 90); k = box['width'] / 250
+        return box['x'] + box['width'] / 2 + r * math.cos(a) * k, box['y'] + box['height'] / 2 + r * math.sin(a) * k
+    def drag(box, a_from, r_from, a_to, r_to):
+        pg.mouse.move(*xy(box, a_from, r_from)); pg.mouse.down()
+        pg.mouse.move(*xy(box, a_to, r_to), steps=6); pg.mouse.up()
+    for n in range(12):
+        if overlay_on(pg):
+            return True
+        st = pg.evaluate("Modules.list.clock.peek()")
+        if not st or st['busy']:
+            pg.wait_for_timeout(700); continue
+        box = pg.locator('#ckFace').bounding_box(); t = st['target']
+        if n == 1:                      # one deliberate wrong answer to test the feedback path
+            pg.click('#ckCheck'); pg.wait_for_timeout(200); continue
+        if pg.locator('#ckG1').is_visible() and n == 2:
+            pg.click('#ckG1'); pg.wait_for_timeout(200)
+        # minute hand first (tip at r=74), then the hour hand (tip at r=46)
+        drag(box, st['m'] * 6, 70, t['m'] * 6, 70)
+        st = pg.evaluate("Modules.list.clock.peek()")
+        ha = (st['h'] % 12) * 30 + st['m'] * .5
+        drag(box, ha, 40, (t['h'] % 12) * 30 + t['m'] * .5, 40)
+        st = pg.evaluate("Modules.list.clock.peek()")
+        if (st['h'], st['m']) != (t['h'], t['m']):
+            print('   clock drag mismatch', st, t)
+        pg.click('#ckCheck'); pg.wait_for_timeout(2100)
+    return overlay_on(pg)
+
+
+PLAY = {'duel': play_duel, 'wordsearch': play_wordsearch, 'rhyme': play_rhyme, 'clock': play_clock}
 
 
 def main():

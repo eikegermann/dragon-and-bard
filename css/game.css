@@ -153,3 +153,23 @@ h2{margin:0 0 8px;font-size:30px}
 .swatch .c{width:60px;height:60px;border-radius:50%;border:4px solid #0006}
 .swatch.chosen{outline:4px solid var(--gold)}
 .swatch.locked .c{filter:grayscale(.7) brightness(.6)}
+
+/* Stopped clocks */
+#ckBody{flex:1;display:flex;gap:22px;align-items:flex-start;justify-content:center;padding:14px 16px 140px}
+#ckMain{flex:1;max-width:560px;display:flex;flex-direction:column;align-items:center;gap:12px}
+#ckNote{font-size:22px;text-align:center}
+.cknote{font-size:40px;letter-spacing:1px;display:inline-block;margin-left:6px}
+#ckFace{width:min(430px,52vh);height:min(430px,52vh);touch-action:none;user-select:none;-webkit-user-select:none}
+#ckMsg{min-height:1.4em;font-size:18px;text-align:center}
+.ckroom{background:var(--panel2);border-radius:12px;padding:8px 10px;margin-bottom:8px;display:flex;justify-content:space-between;gap:6px;font-size:16px}
+.ckroom.cur{outline:3px solid var(--gold)}.ckroom.free{opacity:.75}.ckroom.stuck{opacity:.45}
+.ckhl{border-radius:8px;padding:0 4px}
+.ckhl.m{background:#4fb3ff55;box-shadow:0 0 12px #4fb3ff;animation:ckflash .45s 3 alternate}
+.ckhl.h{background:#e8743b55;box-shadow:0 0 12px #e8743b;animation:ckflash .45s 3 alternate}
+.ckglow{fill:none;stroke-width:5;animation:ckflash .45s 3 alternate}
+.ckglow.m{stroke:#4fb3ff;filter:drop-shadow(0 0 5px #4fb3ff)}
+.ckglow.h{stroke:#e8743b;filter:drop-shadow(0 0 5px #e8743b)}
+@keyframes ckflash{from{opacity:1}to{opacity:.15}}
+.ckhelp{display:flex;gap:16px;align-items:flex-start;text-align:left;font-size:17px;max-width:640px}
+.ckhelp p{margin:0 0 8px}
+#clock .scol .btn{font-size:16px;padding:10px 12px}
