@@ -32,7 +32,9 @@ To share a single offline file, run `python tools/bundle.py` and hand out `dist/
 
 - `index.html`, `css/game.css`
 - `js/core.js`: save, bard lines, art, overlays, and the **module runner** (the interface every encounter uses)
-- `js/modules/*.js`: one file per encounter type (`duel`, `wordsearch`, `rhyme`, `clock`). Each module takes parameters, uses the party through a small interface, logs every attempt with timing, and reports outcome and rewards.
+- `js/glyphs.js`: how each character is written (stroke paths in Victorian Modern Cursive-style shapes) and an on-device handwriting recogniser ($P point cloud). `node tests/quill_accuracy.js` checks it.
+- `js/quill.js`: the quill card. Write with a finger, stylus or Apple Pencil, at three levels: Trace, Remember, Free.
+- `js/modules/*.js`: one file per encounter type (`duel`, `wordsearch`, `rhyme`, `clock`, `scribe`). Each module takes parameters, uses the party through a small interface, logs every attempt with timing, and reports outcome and rewards.
 - `js/game.js`: world map, party, wardrobe, and the bridge between the game and the modules
 - `js/sandbox.js`: the sandbox
 - `tests/smoke.py`: plays every preset of every module to the end, plus a short game run (`pip install playwright && playwright install chromium`, then `python tests/smoke.py`)

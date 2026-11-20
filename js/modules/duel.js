@@ -50,11 +50,6 @@ const M={
           <button class="btn gold quillBtn" id="quillBtn" title="Write it with the quill">🪶</button>
         </div>
         <div id="pad"></div>
-        <div id="quillPanel">
-          <div style="font-weight:800">Write your answer with the quill</div>
-          <div class="qboxes"><input class="qbox" id="q1" maxlength="1" inputmode="numeric" autocomplete="off"><input class="qbox" id="q2" maxlength="1" inputmode="numeric" autocomplete="off"></div>
-          <div class="row"><button class="btn ghost" id="quillCancel" style="color:#2a2340;border-color:#8a7fb0">Number pad</button><button class="btn fire" id="quillOk">Done</button></div>
-        </div>
       </div>
       <div id="log"></div>
     </div>
@@ -75,11 +70,7 @@ const M={
         if(k==='⌫')D.answer=D.answer.slice(0,-1);else if(k==='✓')return checkAnswer(D.answer,false);
         else if(D.answer.length<2)D.answer+=k; answerShow.textContent=D.answer;};
       pad.appendChild(b);});
-    quillBtn.onclick=()=>{pad.style.display='none';quillPanel.classList.add('on');q1.value='';q2.value='';q1.focus();};
-    quillCancel.onclick=()=>{quillPanel.classList.remove('on');pad.style.display='grid';q1.blur();q2.blur();};
-    q1.addEventListener('input',()=>{q1.value=q1.value.replace(/\D/g,'');if(q1.value)q2.focus();});
-    q2.addEventListener('input',()=>{q2.value=q2.value.replace(/\D/g,'');});
-    quillOk.onclick=()=>{q1.blur();q2.blur();checkAnswer((q1.value+q2.value).replace(/^0+(?=\d)/,''),true);};
+    quillBtn.onclick=()=>openQuill();
     answerArea.addEventListener('animationend',()=>answerArea.classList.remove('shake'));
     rollBtn.onclick=roll;
     aimBtn.onclick=()=>useArcher('adv');
@@ -87,7 +78,7 @@ const M={
     skipDuel.onclick=()=>RUN&&RUN.skip();
   },
   start(p,run){RUN=run; if(p.choice&&p.choice.length)chooseFlame(p); else begin(p);},
-  abort(){if(D)D.dead=true;}
+  abort(){if(D)D.dead=true;Quill.close();}
 };
 
 function chooseFlame(p){
@@ -175,23 +166,29 @@ async function roll(){
     D.p=0; renderStones(); say('frozen',3000); D.busy=false; return setTimeout(()=>endDuel(true),1600);}
   question.innerHTML=`Your stone's heat is <b>${D.p}</b>.<br>You rolled <b>${D.rolls.join('</b> and <b>')}</b>.<br>`+
     (D.cold?'Cool it down: how much heat is left?':'Heat it up: how much heat now?');
-  D.answer=''; answerShow.textContent=''; answerArea.classList.remove('shake'); answerArea.style.display='flex'; quillPanel.classList.remove('on'); pad.style.display='grid';
+  D.answer=''; answerShow.textContent=''; answerArea.classList.remove('shake'); answerArea.style.display='flex';
   answerShow.classList.remove('ready'); void answerShow.offsetWidth; answerShow.classList.add('ready');
   RUN.asked();
   D.busy=false;
 }
+function openQuill(note){
+  if(!D)return;
+  Quill.open({count:2,prompt:question.innerHTML,note,
+    onDone:r=>checkAnswer(r.text.replace(/^0+(?=\d)/,''),r),onCancel:()=>{}});
+}
+// quill: false for the number pad, or the quill's result (what was written and how)
 function checkAnswer(ans,quill){
   if(!ans||!D)return;
   const total=sum(D.rolls), correct=D.cold?D.p-total:D.p+total;
   const item=`${D.p}${D.cold?' − ':' + '}${D.rolls.join(D.cold?' − ':' + ')}`;
-  RUN.answered(+ans===correct,`${item} = ${ans}`+(quill?' (quill)':''));
+  RUN.answered(+ans===correct,`${item} = ${ans}`+(quill?` (quill ${['','trace','remember','free'][quill.level]}${quill.chars.some(c=>c.asked)?', asked':''}${quill.formationOk?'':', formation tip'})`:''));
   if(+ans!==correct){answerArea.classList.remove('shake');void answerArea.offsetWidth;answerArea.classList.add('shake');
-    say('wrong'); D.answer=''; answerShow.textContent=''; if(quill){q1.value='';q2.value='';} return;}
+    say('wrong'); D.answer=''; answerShow.textContent=''; if(quill)setTimeout(()=>openQuill('Not quite! Check your sum, then write it again.'),900); return;}
   if(quill){RUN.reward('quill'); log.textContent='🪶 +1 quill point!';
     if(RUN.host.isFirstQuill()&&!RUN.flags.quillUsed){RUN.flag('quillUsed');setTimeout(()=>say('quillFirst',5500),900);}}
   else log.textContent='';
   if(Math.random()<.45)say(D.cold?'rightCold':'right',2500);
-  D.p=correct; answerArea.style.display='none'; quillPanel.classList.remove('on'); renderStones();
+  D.p=correct; answerArea.style.display='none'; renderStones();
   if(D.cold?D.p<=0:D.p>=D.target)return setTimeout(()=>endDuel(true),800);
   setTimeout(rivalTurn,900);
 }

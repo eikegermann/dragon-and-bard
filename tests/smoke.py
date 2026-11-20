@@ -42,9 +42,13 @@ def play_duel(pg):
                 continue
             heat = int(m.group(1)); rolls = [int(x) for x in re.findall(r'\d+', m.group(2))]
             ans = heat - sum(rolls) if 'Cool' in q else heat + sum(rolls)
-            for ch in str(ans):
-                pg.locator('#pad button', has_text=re.compile('^' + ch + '$')).click()
-            pg.locator('#pad button', has_text='✓').click()
+            if _ % 2:   # every other answer with the quill
+                pg.click('#quillBtn'); pg.wait_for_timeout(200)
+                quill_write(pg, str(ans)); pg.wait_for_timeout(1200)
+            else:
+                for ch in str(ans):
+                    pg.locator('#pad button', has_text=re.compile('^' + ch + '$')).click()
+                pg.locator('#pad button', has_text='✓').click()
             pg.wait_for_timeout(2600)
         else:
             pg.wait_for_timeout(400)
@@ -126,7 +130,44 @@ def play_clock(pg):
     return overlay_on(pg)
 
 
-PLAY = {'duel': play_duel, 'wordsearch': play_wordsearch, 'rhyme': play_rhyme, 'clock': play_clock}
+def quill_write(pg, text, wobble=0):
+    """Answer an open quill card by writing `text` (picking it first on the guided levels)."""
+    if pg.locator('#quillLayer .qpad button.go').count():
+        for k in text:
+            pg.locator(f"#quillLayer .qpad button:text-is('{k}')").first.click()
+        pg.click('#quillLayer .qpad button.go'); pg.wait_for_timeout(200)
+    for i, ch in enumerate(text):
+        strokes = pg.evaluate(f"Glyphs.DIGITS['{ch}'].strokes")
+        box = pg.locator('#quillLayer .qcell canvas').nth(i).bounding_box()
+        for st in strokes:
+            pts = [(box['x'] + x / 100 * box['width'], box['y'] + y / 140 * box['height']) for x, y in st]
+            pg.mouse.move(*pts[0]); pg.mouse.down()
+            for p in pts[1:]:
+                pg.mouse.move(*p)
+            pg.mouse.up()
+    pg.click('#quillLayer .qdone'); pg.wait_for_timeout(250)
+    # if the quill asks "is this a X or a Y?", pick the right one
+    q = pg.locator('#quillLayer .qquestion .qopts button')
+    if q.count():
+        for i in range(q.count()):
+            if q.nth(i).inner_text().strip() in text:
+                q.nth(i).click(); break
+
+
+def play_scribe(pg):
+    for _ in range(30):
+        if overlay_on(pg):
+            return True
+        if pg.evaluate("Quill.isOpen()") and pg.locator('#quillLayer .qdone').count() + pg.locator('#quillLayer .qpad .go').count():
+            target = pg.inner_text('#quillLayer .qprompt').split()[1]
+            if not target.isdigit():
+                target = str(['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty'].index(target))
+            quill_write(pg, target)
+        pg.wait_for_timeout(1300)
+    return overlay_on(pg)
+
+
+PLAY = {'scribe': play_scribe, 'duel': play_duel, 'wordsearch': play_wordsearch, 'rhyme': play_rhyme, 'clock': play_clock}
 
 
 def main():
@@ -138,16 +179,18 @@ def main():
         pg.on('pageerror', lambda e: errors.append(str(e)))
         pg.goto((ROOT / 'sandbox.html').as_uri())
         mods = pg.evaluate("Object.values(Modules.list).map(m=>[m.id,Object.keys(m.presets)])")
-        for mid, presets in mods:
-            for pre in presets:
-                pg.select_option('#sbModule', mid); pg.select_option('#sbPreset', pre)
+        runs = [(mid, pre, lv) for mid, presets in mods for pre in presets
+                for lv in (['1', '2', '3'] if mid == 'scribe' and pre in ('All digits 0–9', 'Two-digit numbers (10–20)') else ['1'])]
+        for mid, pre, lv in runs:
+            if True:
+                pg.select_option('#sbModule', mid); pg.select_option('#sbPreset', pre); pg.select_option('#sbQuill', lv)
                 pg.click('#sbPlay'); pg.wait_for_timeout(400)
                 ok = PLAY[mid](pg)
                 if ok:
                     click_overlay_last(pg); pg.wait_for_timeout(300)
                 on_results = pg.evaluate("document.getElementById('sbResults').classList.contains('on')")
                 summary = pg.inner_text('#sbSummary').replace('\n', ' | ') if on_results else ''
-                print(('OK  ' if on_results else 'FAIL'), mid, '·', pre, '·', summary[:110])
+                print(('OK  ' if on_results else 'FAIL'), mid, '·', pre, '· quill', lv, '·', summary[:110])
                 if not on_results:
                     failures.append(f'{mid} / {pre}')
                     pg.goto((ROOT / 'sandbox.html').as_uri())

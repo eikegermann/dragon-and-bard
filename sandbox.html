@@ -51,6 +51,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;color:var(--in
         <label>Dragon name <input id="sbName" value="Tester" maxlength="16"></label>
         <label>Colour <select id="sbColour"></select></label>
         <label class="chk"><input type="checkbox" id="sbFirstQuill" checked> First quill use</label>
+        <label>Quill level <select id="sbQuill"><option value="1">✏️ Trace</option><option value="2">🧠 Remember</option><option value="3">✍️ Free</option></select></label>
       </div>
       <div id="sbErr"></div>
       <button class="btn fire" id="sbPlay">▶ Play this scene</button>
@@ -88,10 +89,13 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;color:var(--in
 <div id="bard"><div id="bardSvg"></div><div id="bubble"></div></div>
 
 <script src="js/core.js"></script>
+<script src="js/glyphs.js"></script>
+<script src="js/quill.js"></script>
 <script src="js/modules/duel.js"></script>
 <script src="js/modules/wordsearch.js"></script>
 <script src="js/modules/rhyme.js"></script>
 <script src="js/modules/clock.js"></script>
+<script src="js/modules/scribe.js"></script>
 <script src="js/sandbox.js"></script>
 </body>
 </html>

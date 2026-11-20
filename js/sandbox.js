@@ -46,8 +46,9 @@ function launch(params){
   S.name=$('sbName').value.trim()||'Tester'; S.colour=$('sbColour').value; S.sig=null;
   SB.p={guards:+$('sbGuards').value||0,archers:+$('sbArchers').value||0,ghosts:+$('sbGhosts').value||0,max:+$('sbMax').value||0,used:{guards:0,archers:0,ghosts:0}};
   SB.firstQuill=$('sbFirstQuill').checked;
+  S.quillLevel=+$('sbQuill').value||1;
   SB.launch={module:$('sbModule').value,preset:$('sbPreset').value||'(custom)',params,
-    party:{guards:SB.p.guards,archers:SB.p.archers,ghosts:SB.p.ghosts,max:SB.p.max}};
+    party:{guards:SB.p.guards,archers:SB.p.archers,ghosts:SB.p.ghosts,max:SB.p.max},quillLevel:S.quillLevel};
   Modules.run(SB.launch.module,params,SandboxHost);
 }
 $('sbPlay').onclick=()=>launch();
@@ -99,6 +100,7 @@ function reportText(){
     `Verdict: ${h.verdict==='up'?'👍 keep it':h.verdict==='down'?'👎 needs work':'(none)'}`,
     `Outcome: ${h.outcome} · first try ${st.firstTry}/${st.questions}${st.firstTryRate!=null?' ('+Math.round(st.firstTryRate*100)+'%)':''} · ${st.attempts} attempts · typical answer ${secs(st.medianMs)} · total ${mins(st.totalMs)}`,
     `Rewards: ${Object.entries(h.rewards).map(([k,v])=>k+' +'+v).join(', ')||'none'} · helpers used: guards ${h.used.guards}, archers ${h.used.archers}, ghosts ${h.used.ghosts}`,
+    `Quill level: ${['','trace','remember','free'][h.launch.quillLevel]}`,
     `Party at start: guards ${h.launch.party.guards}, archers ${h.launch.party.archers}, ghosts ${h.launch.party.ghosts}, limit ${h.launch.party.max}`,
     'Parameters:','```json',JSON.stringify(h.launch.params),'```',
     `Notes: ${h.notes||'(none)'}`].join('\n');
