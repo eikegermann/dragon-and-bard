@@ -18,6 +18,30 @@ const RHYMES={
   {a:'I see a red hen',b:'she is counting to',ans:'ten',em:'🔟',opts:[['six','6️⃣'],['two','2️⃣']]},
   {a:'A dragon named Kate',b:'ate soup from a',ans:'plate',em:'🍽️',opts:[['bowl','🥣'],['cup','☕']]},
   {a:'The owl in the tree',b:'is hooting at',ans:'me',em:'👋',opts:[['you','👉'],['us','👫']]}],
+ hollow:[
+  {a:'A ghost in a sheet',b:'has very cold',ans:'feet',em:'🦶',opts:[['hands','🤚'],['soup','🍲']]},
+  {a:'The old clock said one',b:'and the ghosts had some',ans:'fun',em:'🎉',opts:[['tea','🍵'],['soap','🧼']]},
+  {a:'A bat in the hall',b:'flew into the',ans:'wall',em:'🧱',opts:[['door','🚪'],['cake','🍰']]},
+  {a:'The spider spun',b:'a web in the',ans:'sun',em:'☀️',opts:[['rain','🌧️'],['box','📦']]},
+  {a:'A ghost called Lou',b:'just likes to say',ans:'boo',em:'👻',opts:[['hi','👋'],['moo','🐄']]},
+  {a:'The cat on the stair',b:'gave the ghost a big',ans:'scare',em:'😱',opts:[['hug','🤗'],['pear','🍐']]},
+  {a:'The moon is up high',b:'like a lamp in the',ans:'sky',em:'🌙',opts:[['sea','🌊'],['pot','🍲']]},
+  {a:'An owl on a post',b:'said hello to a',ans:'ghost',em:'👻',opts:[['frog','🐸'],['cat','🐈']]},
+  {a:'The door went creak',b:'and a mouse went',ans:'squeak',em:'🐭',opts:[['moo','🐄'],['roar','🦁']]},
+  {a:'The ghost dog Pip',b:'went off on a',ans:'trip',em:'🧳',opts:[['nap','💤'],['bath','🛁']]},
+  {a:'A broom in the hall',b:'is ready for a',ans:'ball',em:'⚽',opts:[['nap','💤'],['ship','🚢']]},
+  {a:'The candle is lit',b:'so the ghosts can',ans:'sit',em:'🪑',opts:[['run','🏃'],['swim','🏊']]}],
+ swamp:[
+  {a:'A frog on a log',b:'went splash in the',ans:'bog',em:'🟤',opts:[['sky','☁️'],['car','🚗']]},
+  {a:'The duck said quack',b:'and then quacked it',ans:'back',em:'🔙',opts:[['up','⬆️'],['sun','☀️']]},
+  {a:'A big green toad',b:'hopped down the',ans:'road',em:'🛣️',opts:[['tree','🌳'],['bed','🛏️']]},
+  {a:'The gator looked mean',b:'but its teeth were',ans:'clean',em:'🪥',opts:[['red','🔴'],['wet','💧']]},
+  {a:'A mozzie flew near',b:'and buzzed in my',ans:'ear',em:'👂',opts:[['nose','👃'],['shoe','👟']]},
+  {a:'The mud is so thick',b:'my boots will',ans:'stick',em:'🥾',opts:[['fly','🪽'],['sing','🎤']]},
+  {a:'A fish in the reeds',b:'eats all of the',ans:'weeds',em:'🌿',opts:[['cake','🍰'],['rocks','🪨']]},
+  {a:'Old Burble the fish',b:'ate a bug from a',ans:'dish',em:'🍽️',opts:[['tree','🌳'],['hat','🎩']]},
+  {a:'The snail is so slow',b:'it says: off I',ans:'go',em:'🐌',opts:[['run','🏃'],['jump','🦘']]},
+  {a:'The lily pads float',b:'like a little green',ans:'boat',em:'⛵',opts:[['car','🚗'],['house','🏠']]}],
  frost:[
   {a:'The flakes of snow',b:'fall soft and',ans:'slow',em:'🐌',opts:[['fast','🐇'],['white','⬜']]},
   {a:'The ice is so cold',b:'it shines like',ans:'gold',em:'🪙',opts:[['glass','🪟'],['snow','❄️']]},
@@ -43,7 +67,9 @@ const M={
     'Forest · with pictures':{set:'forest',pictures:true},
     'Forest · words only':{set:'forest',pictures:false},
     'Frost · with pictures':{set:'frost',pictures:true},
-    'Frost · words only':{set:'frost',pictures:false}},
+    'Frost · words only':{set:'frost',pictures:false},
+    'Haunted Hollow · with pictures':{set:'hollow',pictures:true},
+    'Croakmire Swamp · with pictures':{set:'swamp',pictures:true}},
   html:`
 <section id="rhyme" class="screen">
   <div class="topbar enc"><button class="btn ghost retreatBtn tl">↩ Retreat</button>

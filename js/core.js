@@ -64,12 +64,28 @@ const LINES={
   scribeRight:[{id:'scriberight_01',t:"Perfect! Travellers will love that."},{id:'scriberight_02',t:"Ooh, very neat!"}],
   scribeWrong:[{id:'scribewrong_01',t:"Hmm, that one came out a bit different. Let's try again!"}],
   scribeWin:[{id:'scribewin_01',t:"Every milestone painted! Nobody will ever get lost on this road again."}],
+  mysteryStart:[{id:'mystery_01',t:"A mystery! Read the clue carefully. Then tell our dragon where to sniff."}],
+  mysteryWrong:[{id:'mysterywrong_01',t:"Not there. What did the clue say again?"},{id:'mysterywrong_02',t:"Hmm. Let's read it one more time."}],
+  mysteryEnd:[{id:'mysteryend_01',t:"We solved it! Now, how shall we cheer them up?"}],
+  hollowWelcome:[{id:'hollowwelcome_01',t:"The Haunted Hollow. Is it just me, or did that tree just wave at us?"}],
+  swampWelcome:[{id:'swampwelcome_01',t:"Croakmire Swamp! Mind the mud. And the mozzies. And, well, everything."}],
+  ghostJoin:[{id:'ghostjoin_01',t:"A ghost friend! They can't fight bandits, but they know all about clocks."}],
+  lilyStart:[{id:'lily_01',t:"That's Old Burble, the lily farmer. Lovely fellow. Terrible at counting."}],
+  lilyWrong:[{id:'lilywrong_01',t:"Whoa, wobbly! Count in steps, like Burble's trying to."},{id:'lilywrong_02',t:"Careful! The addigators are watching."}],
+  lilyWin:[{id:'lilywin_01',t:"Across the pond and not even wet! Well, only a bit."}],
+  gatorWrong:[{id:'gatorwrong_01',t:"Eek! It wants a bigger number than that!"},{id:'gatorwrong_02',t:"Grumpy gator! Bigger, we need bigger!"}],
+  gatorWin:[{id:'gatorwin_01',t:"Shhh! Tiptoe… tiptoe… Don't step on that tail!"}],
+  mozzieStart:[{id:'mozzie_01',t:"Mozzies! They won't sit still. Let's catch them in jars of ten."}],
+  mozzieWrong:[{id:'mozziewrong_01',t:"Hmm, count the full jars first. Each jar has ten."}],
+  mozzieWin:[{id:'mozziewin_01',t:"All sorted! And only three bites. On me. Lovely."}],
   rested:[{id:'rested_01',t:"Our friends are back from their nap. Well rested and only slightly grumpy!"}],
   retreat:[{id:'retreat_01',t:"A tactical retreat! Very wise. Very brave. Mostly wise."}],
   skip:[{id:'skip_01',t:"Our shield guard will handle this one. He'll need a long nap afterwards, though!"}],
   journeyEnd:[{id:'end_01',t:"What a journey! My feet hurt and my heart is full."}]
 };
 let bubbleTimer;
+// Read text aloud with the device's own voice (no network).
+function hear(text,rate=.85){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=rate;u.lang='en-GB';speechSynthesis.speak(u);}catch(e){}}
 function say(group,ms=4200){
   const arr=LINES[group]; if(!arr)return; const l=arr[Math.floor(Math.random()*arr.length)];
   const b=document.getElementById('bubble');

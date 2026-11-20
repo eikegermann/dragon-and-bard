@@ -167,7 +167,93 @@ def play_scribe(pg):
     return overlay_on(pg)
 
 
-PLAY = {'scribe': play_scribe, 'duel': play_duel, 'wordsearch': play_wordsearch, 'rhyme': play_rhyme, 'clock': play_clock}
+def final_overlay(pg, *words):
+    return overlay_on(pg) and any(w in pg.inner_text('#overlayBox') for w in words)
+
+
+def try_until(pg, sel):
+    """Click enabled candidates one by one until one sticks (wrong ones get disabled)."""
+    loc = pg.locator(sel)
+    for i in range(loc.count()):
+        el = loc.nth(i)
+        if el.is_enabled() and el.is_visible():
+            el.click(); pg.wait_for_timeout(250)
+            if overlay_on(pg) or 'yes' in (el.get_attribute('class') or ''):
+                return
+
+
+def play_mystery(pg):
+    for _ in range(40):
+        if final_overlay(pg, '+1 Scholar badge'):
+            return True
+        if overlay_on(pg):
+            pg.locator('#overlayBox button').first.click(); pg.wait_for_timeout(300); continue
+        if pg.locator('#myScene [data-k]').count():
+            try_until(pg, '#myScene [data-k]'); pg.wait_for_timeout(1000); continue
+        try_until(pg, '#myScene [data-id]'); pg.wait_for_timeout(1100)
+    return final_overlay(pg, '+1 Scholar badge')
+
+
+def play_lilypad(pg):
+    for _ in range(80):
+        if overlay_on(pg):
+            return True
+        try_until(pg, '#lpPads button'); pg.wait_for_timeout(150)
+        if pg.locator('#lpPads button').count() == 0:
+            pg.wait_for_timeout(1300)
+    return overlay_on(pg)
+
+
+def play_addigator(pg):
+    for _ in range(30):
+        if final_overlay(pg, 'snoring', 'awake'):
+            return True
+        if overlay_on(pg):
+            pg.locator('#overlayBox button').first.click(); pg.wait_for_timeout(300); continue
+        if not pg.locator('.aggator.cur').count():
+            pg.wait_for_timeout(600); continue
+        last = int(pg.inner_text('.aggator.cur .agtag b'))
+        if pg.locator('#agBuild .agslots').count():
+            cards = pg.locator('#agOpts .agcard')
+            order = sorted(range(cards.count()), key=lambda i: -int(cards.nth(i).inner_text()))
+            for i in order:
+                cards.nth(i).click(); pg.wait_for_timeout(80)
+            pg.click('#agFeed')
+        else:
+            cards = pg.locator('#agOpts .agcard')
+            for i in range(cards.count()):
+                if int(cards.nth(i).get_attribute('data-v')) > last:
+                    cards.nth(i).click(); break
+        pg.wait_for_timeout(1500)
+    return final_overlay(pg, 'snoring', 'awake')
+
+
+def play_mozzies(pg):
+    n = 0
+    for _ in range(30):
+        if overlay_on(pg):
+            return True
+        if pg.locator('.mzpick').count():
+            vals = [int(x) for x in pg.locator('.mzpick').evaluate_all("els=>els.map(e=>e.dataset.v)")]
+            pg.locator('.mzpick').nth(vals.index(max(vals))).click()
+        elif pg.locator('#mzDone').count():
+            t = int(pg.inner_text('.mzbig'))
+            for _i in range(t // 10): pg.click('#mzT')
+            for _i in range(t % 10): pg.click('#mzO')
+            pg.click('#mzDone')
+        elif pg.locator('.mzpad').count():
+            v = 10 * pg.locator('#mzShow .mzjar').count() + pg.locator('#mzShow .mzfly').count()
+            n += 1
+            if n % 2:
+                pg.click('#mzQuill'); pg.wait_for_timeout(200); quill_write(pg, str(v)); pg.wait_for_timeout(1300)
+            else:
+                for ch in str(v): pg.locator('.mzpad button', has_text=re.compile('^' + ch + '$')).click()
+                pg.locator('.mzpad button.go').click()
+        pg.wait_for_timeout(1400)
+    return overlay_on(pg)
+
+
+PLAY = {'mystery': play_mystery, 'lilypad': play_lilypad, 'addigator': play_addigator, 'mozzies': play_mozzies, 'scribe': play_scribe, 'duel': play_duel, 'wordsearch': play_wordsearch, 'rhyme': play_rhyme, 'clock': play_clock}
 
 
 def main():
@@ -206,6 +292,43 @@ def main():
         pg.locator('.screen.on .retreatBtn').click(); pg.locator('#overlayBox button.fire').click(); pg.wait_for_timeout(500)
         if not pg.evaluate("document.getElementById('map').classList.contains('on')"):
             failures.append('game: retreat did not return to map')
+        # the Haunted Hollow and Croakmire Swamp: reachable, and every new kind of stop plays through
+        info = pg.evaluate("""(()=>{const N=S.run.nodes;const g=N.find(n=>n.region==='forest'&&n.t==='exit'&&N[n.to].region==='hollow');
+          const h=N.filter(n=>n.region==='hollow'), w=N.filter(n=>n.region==='swamp');
+          const hx=h.find(n=>n.t==='exit'), wb=w.find(n=>n.t==='back');
+          return {gate:!!g, hollow:h.length, swamp:w.length, toSwamp:hx&&N[hx.to].region, backOk:wb&&N[wb.to].id===hx.id,
+                  kinds:[...new Set([...h,...w].map(n=>n.t))].sort().join(' ')};})()""")
+        print('world:', info)
+        if not (info['gate'] and info['hollow'] and info['swamp'] and info['toSwamp'] == 'swamp' and info['backOk']):
+            failures.append('world: hollow/swamp not wired')
+        for t, mid in [('clock', 'clock'), ('mystery', 'mystery'), ('lily', 'lilypad'), ('mozzie', 'mozzies'), ('gators', 'addigator')]:
+            nid = pg.evaluate(f"(S.run.nodes.find(n=>n.t==='{t}')||{{}}).id")
+            if nid is None:
+                continue
+            pg.evaluate(f"(()=>{{const n=S.run.nodes[{nid}];n.cleared=false;S.run.pos=S.run.nodes.find(x=>x.region===n.region&&x.t==='start').id;startEncounter(n);S.run.pos={nid};}})()")
+            pg.wait_for_timeout(500)
+            ok = PLAY[mid](pg)
+            if ok:
+                click_overlay_last(pg); pg.wait_for_timeout(600)
+            if overlay_on(pg):
+                click_overlay_last(pg); pg.wait_for_timeout(400)
+            on_map = pg.evaluate("document.getElementById('map').classList.contains('on')")
+            print(('OK  ' if on_map else 'FAIL'), 'game encounter', t)
+            if not on_map:
+                failures.append(f'game: {t} did not return to the map')
+        g = pg.evaluate("S.run.ghost")
+        print('ghost friends after clocks:', g)
+        # an old world-2 save is upgraded in place, keeping forest progress
+        up = pg.evaluate("""(()=>{const nodes=[];
+          const F=genRegion('forest',7,[{key:'hollow',layer:2,top:true},{key:'meadow',layer:4,top:false}],nodes);
+          const R=genRegion('frost',5,[{key:'tundra',layer:2,top:true}],nodes);F.exit.to=R.start.id;
+          S.run={world:2,nodes,pos:F.start.id,visited:[F.start.id,F.start.next[0]],seen:[],cleared:[F.start.next[0]],bossRest:{},rest:[],prot:4,arch:1,
+                 deco:{forest:makeDeco('forest'),frost:makeDeco('frost')}};
+          migrateRun();return {world:S.run.world,prot:S.run.prot,visited:S.run.visited.length,hollow:S.run.nodes.some(n=>n.region==='hollow')};})()""")
+        print('upgrade:', up)
+        if not (up['world'] == 3 and up['prot'] == 4 and up['visited'] == 2 and up['hollow']):
+            failures.append('world: world-2 save upgrade failed')
+        pg.evaluate("goMap()"); pg.wait_for_timeout(300)
         b.close()
     if errors:
         print('PAGE ERRORS:', *errors, sep='\n  ')

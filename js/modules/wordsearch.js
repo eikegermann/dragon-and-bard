@@ -1,6 +1,8 @@
 // ---------- Module: bandit word search ----------
 (function(){
 const WORDS={
+  hollow:['BOO','BAT','OWL','CAT','WEB','DOG','BED','KEY','SOCK','MOON','BONE','DOOR','MIST','HUSH','DUST','TOWER','GHOST','CLOCK','CREAK','STAIR','ATTIC','BROOM','CANDLE','SPIDER','SHADOW','LANTERN'],
+  swamp:['BOG','MUD','BUG','EEL','LOG','FROG','TOAD','REED','LILY','POND','MOSS','NEWT','DUCK','FISH','RAFT','SNAIL','SLIME','MARSH','CROAK','HERON','GATOR','SPLASH','MOZZIE','PADDLE'],
   easy:['CAT','DOG','SUN','HAT','FOX','OWL','BAT','PIG','EGG','CUP','MAP','WEB',
     'FIRE','TREE','SONG','GOLD','LUTE','CAVE','MOON','STAR','WING','TAIL','ROCK','SNOW','FROG','DUCK','CAKE','BOAT','BARD','HORN','LAMP','NEST'],
   hard:['DRAGON','CASTLE','FOREST','SWORD','CROWN','MAGIC','SPELL','SHIELD','ARROW','TOWER','RIVER','CLOUD','STORM',
@@ -22,6 +24,8 @@ const M={
     'Forest · 7×7':{size:7,min:4,max:5,dirs:'hv',want:5,theme:'forest'},
     'Frost · 7×7':{size:7,min:4,max:5,dirs:'hv',want:5,theme:'frost'},
     'Frost · with diagonals':{size:7,min:4,max:6,dirs:'hvd',want:6,theme:'frost'},
+    'Haunted Hollow · 7×7':{size:7,min:4,max:5,dirs:'hv',want:5,theme:'hollow'},
+    'Croakmire Swamp · 7×7':{size:7,min:4,max:5,dirs:'hv',want:5,theme:'swamp'},
     'Hard · 8×8 every direction':{size:8,min:5,max:8,dirs:'all',want:6,theme:'hard'}},
   html:`
 <section id="search" class="screen">
