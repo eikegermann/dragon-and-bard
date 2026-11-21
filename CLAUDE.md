@@ -49,6 +49,9 @@ upsell, no manipulative rewards**. The gap it aims at: learning that *is* the ga
   **Timing is recorded silently, never shown or rewarded** (no speed pressure).
 - Speech input (#48), if ever built: **on-device only**, nothing sent off the device.
 - Placement check for parents (#49): story moment, not a test.
+- **Three ways to play** (#31): **Story** (linear route, one exit per region, regions follow the word-bag
+  clusters in the Phonics Ladder doc), **Explore** (open map, next phase once the current one is practised
+  enough, spaced review brings old phases back) and **Practice** (sandbox: pick module and phase).
 
 **Game rules agreed with the owner**
 - Farming (replaying encounters) is fine.
