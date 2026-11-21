@@ -49,7 +49,9 @@ function round(){
       <button class="btn ghost" id="mzTm">− jar</button><button class="btn ghost" id="mzOm">− one</button><button class="btn fire" id="mzDone">✔ Done</button></div>`;
     mzT.onclick=()=>{if(MZ.t<9){MZ.t++;draw();}}; mzO.onclick=()=>{MZ.o++;
       if(MZ.o>=10){MZ.o-=10;MZ.t++;mzMsg.textContent='Ten loose ones! Pop them in a jar.';}draw();};
-    mzTm.onclick=()=>{if(MZ.t>0){MZ.t--;draw();}}; mzOm.onclick=()=>{if(MZ.o>0){MZ.o--;draw();}};
+    mzTm.onclick=()=>{if(MZ.t>0){MZ.t--;draw();}}; mzOm.onclick=()=>{if(MZ.o>0){MZ.o--;draw();}
+      // no loose ones left: open a jar and let one fly (ten becomes nine loose ones)
+      else if(MZ.t>0){MZ.t--;MZ.o=9;draw();mzMsg.textContent='You open a jar and let one fly away: 9 still buzzing loose.';}};
     mzDone.onclick=()=>{const v=MZ.t*10+MZ.o;check(v===MZ.target,`catch ${MZ.target} → ${MZ.t} jars + ${MZ.o} (${v})`,
       v<MZ.target?'Not enough yet, catch some more!':'Too many! Let some go.');};
     draw();
