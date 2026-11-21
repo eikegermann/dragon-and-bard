@@ -69,11 +69,13 @@ function writeStep(expected){
     <div class="qquestion"></div>`;
   const wrap=st.querySelector('.qboxes2');
   for(let i=0;i<n;i++)Q.boxes.push(makeBox(wrap,expected?expected[i]:null,expected?Q.lvl:3,i));
+  // free writing: start with one box; the next appears once the previous one has ink (one-digit answers stay simple)
+  if(!expected)Q.boxes.forEach((b,i)=>{if(i>0)b.el.classList.add('qlater');});
   st.querySelector('.qback').style.display=expected?'':'none';
   st.querySelector('.qback').onclick=pickStep;
   st.querySelector('.qdone').onclick=done;
   if(expected)Q.boxes.forEach((b,i)=>setTimeout(()=>showGuide(b,true),i*1500));
-  msg(expected?(Q.lvl===1?'Watch, then follow the dots and arrows. Start at the green dot!':'Watch how it\'s written. Then write it from memory!'):'Write your answer, one number in each box.');
+  msg(expected?(Q.lvl===1?'Watch, then follow the dots and arrows. Start at the green dot!':'Watch how it\'s written. Then write it from memory!'):'Write your answer. Need another number? A new box appears.');
 }
 function makeBox(wrap,expected,mode,i){
   const el=document.createElement('div'); el.className='qcell';
@@ -89,6 +91,7 @@ function makeBox(wrap,expected,mode,i){
   const pt=e=>{const r=b.cv.getBoundingClientRect();return [(e.clientX-r.left)/r.width*100,(e.clientY-r.top)/r.height*140];};
   let cur=null;
   b.cv.addEventListener('pointerdown',e=>{e.preventDefault();b.cv.setPointerCapture(e.pointerId);cur=[pt(e)];b.strokes.push(cur);b.resolved=null;
+    const nx=Q&&Q.boxes[Q.boxes.indexOf(b)+1]; if(nx&&nx.el.classList.contains('qlater')){nx.el.classList.remove('qlater');nx.el.classList.add('qoptional');requestAnimationFrame(()=>{sizeCanvas(nx);redraw(nx);});}
     if(b.mode===2&&!b.faded)fade(b);redraw(b);});
   b.cv.addEventListener('pointermove',e=>{if(!cur)return;const p=pt(e),l=cur[cur.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>.8){cur.push(p);redraw(b);}});
   const up=()=>{cur=null;};

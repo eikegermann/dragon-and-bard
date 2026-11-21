@@ -208,13 +208,16 @@ h2{margin:0 0 8px;font-size:30px}
 .qanim{fill:none;stroke:#e8743b;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.85;animation:qdraw 1s linear forwards}
 @keyframes qdraw{to{stroke-dashoffset:0}}
 .qmini{background:#e6dcc2;border-radius:10px;padding:6px 10px;font-size:15px;font-weight:800;color:#2a2340}
+.qcell.qlater{visibility:hidden}
+.qcell.qoptional .qpaper{border-style:dashed;opacity:.85}
 .qcell.qbad .qpaper{animation:qshake .4s;border-color:var(--bad)}
 @keyframes qshake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .qcell.qfocus .qpaper{border-color:var(--fire);box-shadow:0 0 0 4px #ff7a2f55}
 .qbtns .btn.ghost{color:#2a2340;border-color:#8a7fb0}
 .qquestion{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:22px}
 .qquestion:empty{display:none}
-.qbig{font-size:40px;line-height:1}
+.qbig{font-size:44px;line-height:1}
+.qopts .btn:not(.gold){background:#fffaf0;color:#2a2340;border:3px solid #8a7fb0;min-width:84px;box-shadow:0 4px 0 #8a7fb0}
 .qmsg{min-height:1.3em;font-size:18px;font-weight:700;text-align:center}
 .qmsg.warn{color:#b23a48}.qmsg.good{color:#1f8a4c}
 
