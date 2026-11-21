@@ -21,7 +21,7 @@ const STORIES={
    {place:'The kitchen',bg:'#33261c',speaker:'👩‍🍳👻 The cook',
     text:'Pip was here! He sat and begged for a sausage. Then he ran up the stairs with something in his mouth.',
     ask:{picture:'Where did Pip go next?',words:'Which way did Pip run?',gap:'Pip ran up the ___.'},
-    spots:[['stairs','🪜','stairs',78,40],['oven','🔥','oven',24,46],['door','🚪','back door',50,78],['pot','🍲','pot',44,34]],answer:'stairs',
+    spots:[['stairs','⬆️','stairs',78,40],['oven','🔥','oven',24,46],['door','🚪','back door',50,78],['pot','🍲','pot',44,34]],answer:'stairs',
     found:'Up the stairs, you hear a tiny snore. Zzz… zzz…'},
    {place:'Upstairs',bg:'#252038',speaker:'🐉 Your dragon sniffs',
     text:'Sniff, sniff. The snore comes from under the bed. Something soft is under there too.',
