@@ -84,6 +84,23 @@ const LINES={
   journeyEnd:[{id:'end_01',t:"What a journey! My feet hurt and my heart is full."}]
 };
 let bubbleTimer;
+// Progress star: a number inside a star that turns gold once `need` is reached, with one ring
+// (or pair of sound-wave brackets, style 'waves') per possible extra success, lighting up as they come.
+function starMeter(el,{got=0,need=3,extra=0,style='rings'}){
+  const W=200,H=150,cx=100,cy=75,gold='#ffcf4a',grey='#5d5675',done=got>=need;
+  const pts=Array.from({length:10},(_,i)=>{const r=i%2?19:44,a=-Math.PI/2+i*Math.PI/5;return `${(cx+r*Math.cos(a)).toFixed(1)},${(cy+r*Math.sin(a)).toFixed(1)}`;}).join(' ');
+  let rings='';
+  for(let k=1;k<=extra;k++){const on=got>=need+k, c=on?gold:grey, w=on?5:3;
+    if(style==='waves'){const r=50+k*14;
+      rings+=`<path d="M${cx-r*.55} ${cy-r*.8} Q${cx-r*1.08} ${cy} ${cx-r*.55} ${cy+r*.8}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round"${on?' class="smOn"':''}/>`+
+             `<path d="M${cx+r*.55} ${cy-r*.8} Q${cx+r*1.08} ${cy} ${cx+r*.55} ${cy+r*.8}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round"${on?' class="smOn"':''}/>`;}
+    else rings+=`<circle cx="${cx}" cy="${cy}" r="${48+k*11}" fill="none" stroke="${c}" stroke-width="${w}"${on?' class="smOn"':''}/>`;}
+  const was=el.dataset.got!=null?+el.dataset.got:got; el.dataset.got=got;
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" class="starMeter">${rings}
+    <polygon points="${pts}" fill="${done?gold:'#3a3450'}" stroke="${done?'#fff3c4':grey}" stroke-width="3" stroke-linejoin="round"${done&&was<need?' class="smPop"':''}/>
+    <text x="${cx}" y="${cy+9}" text-anchor="middle" font-size="26" font-weight="800" fill="${done?'#4a3200':'#cfc8e6'}">${done?got:`${got}/${need}`}</text></svg>`;
+  if(got>was)el.querySelector('svg').classList.add('smBump');
+}
 // Read text aloud with the device's own voice (no network).
 function hear(text,rate=.85){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=rate;u.lang='en-GB';speechSynthesis.speak(u);}catch(e){}}
 function say(group,ms=4200){

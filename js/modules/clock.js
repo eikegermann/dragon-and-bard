@@ -40,6 +40,7 @@ const M={
       <div id="ckMsg" class="small"></div>
     </div>
     <div class="scol" style="align-items:stretch">
+      <div id="ckMeter"></div>
       <button class="btn gold" id="ckHelp">📖 How to read a clock</button>
       <div class="small" id="ckGhostInfo"></div>
       <button class="btn ghost" id="ckG1">👻 Show the minutes</button>
@@ -182,6 +183,7 @@ function renderSide(){
   const n=CK.targets.length;
   ckRooms.innerHTML=CK.rooms.map((r,k)=>{const st=CK.state[k];
     return `<div class="ckroom ${st}${k===CK.i&&st==='todo'?' cur':''}">${r}<span>${st==='free'?'👻✨':st==='stuck'?'🔒':k===CK.i?'🕰️':'🚪'}</span></div>`;}).join('');
+  starMeter(ckMeter,{got:CK.freed,need:CK.p.need,extra:n-CK.p.need,style:'rings'});
   const g=gh();
   ckGhostInfo.textContent=g>0?`Ghost friends with you: ${'👻'.repeat(g)}`:'No ghost friends yet. Bandits can\'t read clocks!';
   [ckG1,ckG2,ckG3].forEach((b,k)=>b.style.display=g>=k+1?'':'none');

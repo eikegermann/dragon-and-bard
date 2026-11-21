@@ -40,7 +40,7 @@ const M={
     </div>
     <div id="grid"></div>
     <div class="scol" style="align-items:center">
-      <div id="bandits"></div>
+      <div id="bandits"></div><div class="small" id="banditsPending"></div>
       <div class="small" id="searchInfo" style="text-align:center;white-space:pre-line"></div>
       <button class="btn fire" id="searchDone" disabled>Sing the song!</button>
       <div class="small">Found</div>
@@ -100,7 +100,8 @@ function render(){
   todo.forEach(w=>{for(let i=0;i<(W.hint[w]||0);i++){const[r,c]=W.posOf[w][i];
     g.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`).classList.add('hint');}});
   const n=W.found.length;
-  bandits.textContent='😠'.repeat(Math.max(0,W.min-n))+'😄'.repeat(Math.min(n,W.min))+'🛡️'.repeat(W.pending);
+  starMeter(bandits,{got:n,need:W.min,extra:W.words.length-W.min,style:'waves'});
+  banditsPending.textContent=W.pending?`🛡️ ${W.pending} bandit${W.pending>1?'s':''} want${W.pending>1?'':'s'} to join you!`:'';
   searchDone.disabled=n<W.min;
   if(W.scouting){searchInfo.textContent=`Tap a word for your ${W.scouting} shield guard${W.scouting>1?'s':''} to scout!`;return;}
   searchInfo.textContent=(n<W.min?`Find ${W.min-n} more to win them over`:(n<W.words.length?'Every extra word wins over a bandit who wants to join you!':'All found!'))+(W.diag?'\nWords can go sideways ↘ ↗ too!':'');

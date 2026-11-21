@@ -86,8 +86,7 @@ const M={
       <div id="rhymeOpts"></div>
     </div>
     <div class="scol" style="align-items:center">
-      <div id="rhymeCrowd"></div>
-      <div id="rhymeStars"></div>
+      <div id="rhymeMeter"></div>
       <div class="small" id="rhymeInfo" style="text-align:center;white-space:pre-line"></div>
     </div>
   </div>
@@ -120,10 +119,10 @@ function renderSide(){
   const n=RH.pool.length, doneN=RH.i+(RH.done?1:0);
   songSoFar.innerHTML=RH.pool.slice(0,doneN).map(v=>`<div class="songverse">${v.a},<br>${v.b} <b>${v.ans}</b>.</div>`).join('')+
     (doneN<n?`<div class="songverse todo">${n-doneN} more verse${n-doneN>1?'s':''} to go…</div>`:'');
-  rhymeCrowd.textContent='😐'.repeat(n-doneN)+'😄'.repeat(doneN);
-  rhymeStars.textContent='⭐'.repeat(RH.stars)+'☆'.repeat(n-doneN);
+  const need=Math.min(3,n);
+  starMeter(rhymeMeter,{got:RH.stars,need,extra:n-need,style:'waves'});
   rhymeInfo.textContent=(doneN<n?`Verse ${RH.i+1} of ${n}`:'Song complete!')+(RH.pictures?'':'\nNo pictures this time!')+
-    '\nA ⭐ for every rhyme right first time.\n3 ⭐ and a listener may join you!';
+    `\nEvery rhyme right first time counts.\n${need} and a listener may join you!`;
 }
 function pickRhyme(b,w){
   if(!RH||RH.done)return; const v=RH.pool[RH.i];

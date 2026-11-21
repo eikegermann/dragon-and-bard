@@ -103,7 +103,7 @@ h2{margin:0 0 8px;font-size:30px}
 .songverse{background:#fffaf0e6;color:#2a2340;border-radius:14px;padding:8px 12px;font-size:17px;font-weight:700;line-height:1.35;animation:fadein .5s ease-out}
 .songverse b{color:var(--fire)}
 .songverse.todo{background:#0003;color:var(--muted);font-weight:600;text-align:center}
-#rhymeCrowd{font-size:38px;letter-spacing:4px;text-align:center}
+
 .fullsong{background:var(--ink);color:#2a2340;border-radius:16px;padding:12px 20px;font-size:18px;font-weight:700;line-height:1.4;text-align:left;max-height:40vh;overflow:auto}
 .fullsong p{margin:0 0 10px}.fullsong b{color:var(--fire)}
 .blank{display:inline-block;min-width:120px;border-bottom:5px dashed #8a7fb0;color:#8a7fb0}
@@ -112,7 +112,7 @@ h2{margin:0 0 8px;font-size:30px}
 .ropt{background:var(--panel2);border-radius:20px;padding:14px 26px;font-size:30px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:150px;box-shadow:0 5px 0 #0006}
 .ropt .em{font-size:54px}
 .ropt.no{opacity:.35}
-#rhymeStars{font-size:40px;letter-spacing:6px}
+
 .node.signn{cursor:pointer}
 .node.fresh circle{stroke:#9fe8ff;stroke-width:6}
 .ready{animation:ready 1.4s ease-out}
@@ -301,3 +301,11 @@ h2{margin:0 0 8px;font-size:30px}
 .mzpad button{height:56px;font-size:26px;font-weight:800;border-radius:14px;background:#2a2340;color:var(--ink);box-shadow:0 4px 0 #0005}
 .mzpad button.go{background:var(--fire);color:#2a1300}
 #mzMsg{font-size:19px;min-height:1.3em}
+
+/* Progress star */
+.starMeter{width:180px;height:135px;display:block;margin:0 auto;overflow:visible}
+.starMeter.smBump{animation:smbump .45s}
+.starMeter .smPop{transform-origin:100px 75px;animation:smpop .7s}
+.starMeter .smOn{filter:drop-shadow(0 0 6px #ffcf4a)}
+@keyframes smbump{50%{transform:scale(1.08)}}
+@keyframes smpop{40%{transform:scale(1.35)}}
