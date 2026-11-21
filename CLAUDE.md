@@ -97,7 +97,7 @@ Plain HTML/CSS/JS, no build step, no dependencies.
 - `js/glyphs.js`: character formation paths (100×140 box, strokes in taught order) and the $P point-cloud
   recogniser. The same paths draw the guides and act as templates. Digits only so far.
 - `starMeter(el,{got,need,extra,style})` in `js/core.js`: the shared progress star (gold at `need`, one
-  ring or sound-wave pair per extra success). Used by rhymes, word search and clocks.
+  ring, or music note for songs, per extra success). Used by rhymes, word search and clocks.
 - `js/quill.js`: the writing card. `Quill.open({count, prompt, note, onDone, onCancel})`; level in `S.quillLevel`.
 - `js/game.js`: world map (regions, generation, fog, signs), party, encounters → modules, rewards, wardrobe.
 - `js/sandbox.js`: sandbox setup and results (stats, attempts table, verdict, copyable report).

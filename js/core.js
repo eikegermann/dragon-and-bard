@@ -85,13 +85,16 @@ const LINES={
 };
 let bubbleTimer;
 // Progress star: a number inside a star that turns gold once `need` is reached, with one ring
-// (or pair of sound-wave brackets, style 'waves') per possible extra success, lighting up as they come.
+// (or music note, style 'notes'; or sound-wave brackets, style 'waves') per possible extra success, lighting up as they come.
 function starMeter(el,{got=0,need=3,extra=0,style='rings'}){
   const W=200,H=150,cx=100,cy=75,gold='#ffcf4a',grey='#5d5675',done=got>=need;
   const pts=Array.from({length:10},(_,i)=>{const r=i%2?19:44,a=-Math.PI/2+i*Math.PI/5;return `${(cx+r*Math.cos(a)).toFixed(1)},${(cy+r*Math.sin(a)).toFixed(1)}`;}).join(' ');
   let rings='';
   for(let k=1;k<=extra;k++){const on=got>=need+k, c=on?gold:grey, w=on?5:3;
-    if(style==='waves'){const r=50+k*14;
+    if(style==='notes'){   // music notes around the star, left and right alternately, rising like a tune
+      const side=k%2?-1:1, step=Math.ceil(k/2), x=cx+side*(42+step*24), y=cy+34-step*30;
+      rings+=`<text x="${x}" y="${y}" text-anchor="middle" font-size="44" font-weight="800" fill="${on?gold:'#7d759c'}"${on?' class="smOn"':''}>${k%2?'♪':'♫'}</text>`;}
+    else if(style==='waves'){const r=50+k*14;
       rings+=`<path d="M${cx-r*.55} ${cy-r*.8} Q${cx-r*1.08} ${cy} ${cx-r*.55} ${cy+r*.8}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round"${on?' class="smOn"':''}/>`+
              `<path d="M${cx+r*.55} ${cy-r*.8} Q${cx+r*1.08} ${cy} ${cx+r*.55} ${cy+r*.8}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round"${on?' class="smOn"':''}/>`;}
     else rings+=`<circle cx="${cx}" cy="${cy}" r="${48+k*11}" fill="none" stroke="${c}" stroke-width="${w}"${on?' class="smOn"':''}/>`;}

@@ -100,7 +100,7 @@ function render(){
   todo.forEach(w=>{for(let i=0;i<(W.hint[w]||0);i++){const[r,c]=W.posOf[w][i];
     g.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`).classList.add('hint');}});
   const n=W.found.length;
-  starMeter(bandits,{got:n,need:W.min,extra:W.words.length-W.min,style:'waves'});
+  starMeter(bandits,{got:n,need:W.min,extra:W.words.length-W.min,style:'notes'});
   banditsPending.textContent=W.pending?`🛡️ ${W.pending} bandit${W.pending>1?'s':''} want${W.pending>1?'':'s'} to join you!`:'';
   searchDone.disabled=n<W.min;
   if(W.scouting){searchInfo.textContent=`Tap a word for your ${W.scouting} shield guard${W.scouting>1?'s':''} to scout!`;return;}

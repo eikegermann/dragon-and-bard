@@ -120,7 +120,7 @@ function renderSide(){
   songSoFar.innerHTML=RH.pool.slice(0,doneN).map(v=>`<div class="songverse">${v.a},<br>${v.b} <b>${v.ans}</b>.</div>`).join('')+
     (doneN<n?`<div class="songverse todo">${n-doneN} more verse${n-doneN>1?'s':''} to go…</div>`:'');
   const need=Math.min(3,n);
-  starMeter(rhymeMeter,{got:RH.stars,need,extra:n-need,style:'waves'});
+  starMeter(rhymeMeter,{got:RH.stars,need,extra:n-need,style:'notes'});
   rhymeInfo.textContent=(doneN<n?`Verse ${RH.i+1} of ${n}`:'Song complete!')+(RH.pictures?'':'\nNo pictures this time!')+
     `\nEvery rhyme right first time counts.\n${need} and a listener may join you!`;
 }
