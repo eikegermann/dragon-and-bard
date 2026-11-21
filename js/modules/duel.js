@@ -174,13 +174,17 @@ async function roll(){
 function openQuill(note){
   if(!D)return;
   Quill.open({count:2,prompt:question.innerHTML,note,
+    // Trace/Remember: the picked number is checked first (a wrong pick counts as a wrong answer)
+    checkPick:v=>{const ok=+v===correctNow();if(!ok){RUN.answered(false,`${itemNow()} = ${+v} (quill pick)`);say('wrong');}
+      return ok||'Not quite! Check your sum and pick again.';},
     onDone:r=>checkAnswer(r.text.replace(/^0+(?=\d)/,''),r),onCancel:()=>{}});
 }
 // quill: false for the number pad, or the quill's result (what was written and how)
+function correctNow(){const t=sum(D.rolls);return D.cold?D.p-t:D.p+t;}
+function itemNow(){return `${D.p}${D.cold?' − ':' + '}${D.rolls.join(D.cold?' − ':' + ')}`;}
 function checkAnswer(ans,quill){
   if(!ans||!D)return;
-  const total=sum(D.rolls), correct=D.cold?D.p-total:D.p+total;
-  const item=`${D.p}${D.cold?' − ':' + '}${D.rolls.join(D.cold?' − ':' + ')}`;
+  const correct=correctNow(), item=itemNow();
   RUN.answered(+ans===correct,`${item} = ${ans}`+(quill?` (quill ${['','trace','remember','free'][quill.level]}${quill.chars.some(c=>c.asked)?', asked':''}${quill.formationOk?'':', formation tip'})`:''));
   if(+ans!==correct){answerArea.classList.remove('shake');void answerArea.offsetWidth;answerArea.classList.add('shake');
     say('wrong'); D.answer=''; answerShow.textContent=''; if(quill)setTimeout(()=>openQuill('Not quite! Check your sum, then write it again.'),900); return;}

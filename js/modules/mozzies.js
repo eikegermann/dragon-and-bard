@@ -75,7 +75,9 @@ function numberEntry(cb){
   const pad=mzCtl.querySelector('.mzpad');
   ['1','2','3','4','5','6','7','8','9','0','⌫','✓'].forEach(k=>{const b=document.createElement('button');b.textContent=k;if(k==='✓')b.className='go';
     b.onclick=()=>{const out=mzCtl.querySelector('#mzV');if(k==='⌫')v=v.slice(0,-1);else if(k==='✓'){const x=v;v='';out.innerHTML='&nbsp;';if(x)cb(+x);return;}else if(v.length<2)v+=k;out.innerHTML=v||'&nbsp;';};pad.appendChild(b);});
-  mzQuill.onclick=()=>Quill.open({count:2,prompt:'How many mozzies?',onDone:r=>{if(r.text)cb(+r.text);},onCancel:()=>{}});
+  mzQuill.onclick=()=>Quill.open({count:2,prompt:'How many mozzies?',
+    checkPick:v=>+v===MZ.target||(RUN.answered(false,`count → ${+v} (quill pick)`),'Not quite! Count the full jars first, then the loose ones.'),
+    onDone:r=>{if(r.text)cb(+r.text);},onCancel:()=>{}});
 }
 function check(ok,item,hint,btn){
   if(!MZ)return;

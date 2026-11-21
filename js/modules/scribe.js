@@ -50,6 +50,7 @@ function openQuill(note){
   const x=SC.items[SC.i];
   if(SC.tries===0)RUN.asked();
   Quill.open({count:Math.max(2,x.length),prompt:`Write ${label(x)} on the milestone`,note,
+    checkPick:v=>v===x||(SC.p.show==='word'?`That's not ${WORDS[+x]}. Read it again!`:`That's not ${x}. Look again!`),
     onDone:r=>check(x,r),onCancel:()=>{}});
 }
 function check(x,r){

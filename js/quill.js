@@ -32,7 +32,7 @@ function msg(t,cls=''){const m=$q('.qmsg');m.className='qmsg '+cls;m.textContent
 
 function open(opts){
   ensureLayer();
-  Q={opts,count:opts.count||2,lvl:opts.level||level(),boxes:[],picked:'',tries:0};
+  Q={opts,count:opts.count||2,lvl:opts.level||level(),boxes:[],picked:'',tries:0,pickedOk:false};
   layer.classList.add('on');
   $q('.qprompt').innerHTML=opts.prompt||'';
   renderLevels(); msg(opts.note||'', opts.note?'warn':'');
@@ -54,7 +54,16 @@ function pickStep(){
     if(k==='▶'){b.className='go';b.title='Next';}
     b.onclick=()=>{
       if(k==='⌫')Q.picked=Q.picked.slice(0,-1);
-      else if(k==='▶'){if(Q.picked)writeStep(Q.picked.split(''));return;}
+      else if(k==='▶'){
+        if(!Q.picked)return;
+        // the module can check the number before any writing, so nobody traces a wrong answer in vain
+        if(Q.opts.checkPick){const ok=Q.opts.checkPick(Q.picked);
+          if(ok!==true){msg(typeof ok==='string'?ok:'Not quite! Have another think.','warn');Q.picked='';
+            st.querySelector('.qpicked').innerHTML='&nbsp;';pad.classList.remove('qnope');void pad.offsetWidth;pad.classList.add('qnope');return;}
+          Q.pickedOk=true;}
+        writeStep(Q.picked.split(''));
+        if(Q.pickedOk)msg(`Yes, ${Q.picked} is right! Now write it with the quill. ${Q.lvl===1?'Start at the green dot!':'Watch first, then from memory!'}`,'good');
+        return;}
       else if(Q.picked.length<Q.count)Q.picked+=k;
       st.querySelector('.qpicked').innerHTML=Q.picked||'&nbsp;';};
     pad.appendChild(b);});

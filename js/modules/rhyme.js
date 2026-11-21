@@ -44,7 +44,7 @@ const RHYMES={
   {a:'The lily pads float',b:'like a little green',ans:'boat',em:'⛵',opts:[['car','🚗'],['house','🏠']]}],
  frost:[
   {a:'The flakes of snow',b:'fall soft and',ans:'slow',em:'🐌',opts:[['fast','🐇'],['white','⬜']]},
-  {a:'The ice is so cold',b:'it shines like',ans:'gold',em:'🪙',opts:[['glass','🪟'],['snow','❄️']]},
+  {a:'The ice is so cold',b:'it shines like',ans:'gold',em:'🥇',opts:[['glass','🪟'],['snow','❄️']]},
   {a:'A polar bear',b:'jumped high in the',ans:'air',em:'💨',opts:[['snow','❄️'],['sea','🌊']]},
   {a:'The wind will blow',b:'across the white',ans:'snow',em:'❄️',opts:[['ice','🧊'],['hill','⛰️']]},
   {a:'My nose is red',b:'so I ride my',ans:'sled',em:'🛷',opts:[['bike','🚲'],['boat','⛵']]},

@@ -192,6 +192,7 @@ h2{margin:0 0 8px;font-size:30px}
 .qpad.small{grid-template-columns:repeat(10,48px)}
 .qpad button{height:58px;font-size:28px;font-weight:800;border-radius:14px;background:#2a2340;color:var(--ink);box-shadow:0 4px 0 #0005}
 .qpad.small button{height:48px;font-size:24px}
+.qpad.qnope{animation:qshake .4s}
 .qpad button.go{background:var(--fire);color:#2a1300}
 .qboxes2{display:flex;gap:16px;justify-content:center}
 .qcell{display:flex;flex-direction:column;align-items:center;gap:6px}
