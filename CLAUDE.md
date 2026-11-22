@@ -24,6 +24,9 @@ upsell, no manipulative rewards**. The gap it aims at: learning that *is* the ga
 
 ## Where things live
 
+- **Architecture decision records** in `docs/adr/` (index in its README): the lasting decisions about how
+  the game is built, and why. Read the relevant ones before changing an area; write a new ADR (from
+  `docs/adr/template.md`) when a significant decision is made, and supersede rather than rewrite old ones.
 - **GitHub Issues are the single planning tool.** Ideas, decisions and plans go there (labels: `next`,
   `backlog`, `later`, `maths`, `reading`, `story`, `world`, `tech`, `polish`, `accessibility`).
   `next` = agreed upcoming work. Comment on an issue when something gets built or decided.
