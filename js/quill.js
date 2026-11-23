@@ -180,8 +180,18 @@ function ask(b,options){
   const row=qq.querySelector('.qopts');
   const add=(label,cls,fn)=>{const x=document.createElement('button');x.className='btn '+cls;x.innerHTML=label;x.onclick=fn;row.appendChild(x);};
   options.forEach(o=>add(`<span class="qbig">${o}</span>`,'',()=>{b.resolved=o;b.asked=true;b.el.classList.remove('qfocus');qq.innerHTML='';done();}));
+  add(options.length?'Something else':'I wrote…','',()=>whichDidYouWrite(b));
   if(!options.length)add('↺ Try again','',()=>{b.strokes=[];redraw(b);b.el.classList.remove('qfocus');qq.innerHTML='';msg('');});
   add('✏️ Show me how','gold',()=>showMeHow(b));
+}
+// The quill misread it: the child says which number they wrote (logged as asked), no tracing needed.
+function whichDidYouWrite(b){
+  const qq=$q('.qquestion');
+  qq.innerHTML=`<div>Which number did you write?</div><div class="qpad small"></div>`;
+  const pad=qq.querySelector('.qpad');
+  '1234567890'.split('').forEach(k=>{const x=document.createElement('button');x.textContent=k;
+    x.onclick=()=>{b.resolved=k;b.asked=true;b.misread=true;b.el.classList.remove('qfocus');qq.innerHTML='';done();};
+    pad.appendChild(x);});
 }
 // Switch one box to guided writing: which number did you mean? then trace it.
 function showMeHow(b){
@@ -197,7 +207,7 @@ function showMeHow(b){
 function finish(){
   const used=Q.boxes.filter(b=>b.resolved!=null);
   const chars=used.map(b=>{const f=Glyphs.formation(b.strokes,b.resolved);
-    return {ch:b.resolved,mode:b.mode,asked:b.asked,retries:b.retries,peeks:b.peeks,start:f.start,dir:f.dir};});
+    return {ch:b.resolved,mode:b.mode,asked:b.asked,misread:!!b.misread,retries:b.retries,peeks:b.peeks,start:f.start,dir:f.dir};});
   const text=chars.map(c=>c.ch).join('');
   // tips only where the child saw the guide (trace/remember or "show me how"); in free writing we just record
   const off=chars.find(c=>c.mode!==3&&!c.start)||chars.find(c=>c.mode!==3&&!c.dir);

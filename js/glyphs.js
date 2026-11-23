@@ -22,7 +22,10 @@ const DIGITS={
   '5':{strokes:[J(L(32,18,29,70),A(50,92,28,32,222,515)),L(32,18,76,18)],say:'Down, round the tummy. Lift. Then the flag at the top.'},
   '6':{strokes:[J(A(56,78,30,58,-65,-200),A(52,100,24,22,160,-180))],say:'Start at the top, curve down, and round into a circle.'},
   '7':{strokes:[J(L(22,18,80,18),L(80,18,40,122))],say:'Across the top, then a long slide down.'},
-  '8':{strokes:[J(A(50,44,22,24,-30,-270),A(50,96,27,26,-90,270),L(50,70,69,32))],say:'Start at the top, curve like an s, and go back up to close it.'},
+  // a smooth figure of eight: from the top, round the top loop to the left, through the middle,
+  // round the bottom loop, and back up through the middle to close (no straight lines)
+  '8':{strokes:[Array.from({length:61},(_,i)=>{const t=-.2+i/60*(2*Math.PI+.15);return [50-26*Math.sin(2*t),70-52*Math.cos(t)];})],
+       say:'Start at the top, curve like an s, and go back up to close it.'},
   '9':{strokes:[J(A(50,46,24,26,-20,-380),L(50+24*Math.cos(rad(-20)),46+26*Math.sin(rad(-20)),70,122))],say:'Round the other way like a c and close it, then straight down.'}
 };
 const VARIANTS={
