@@ -3,7 +3,7 @@ const SAVE_KEY='dragonBardSave_v1';
 let S={name:'',sig:null,wiz:0,sch:0,quill:0,quillUsed:false,colour:'green',hat:'red',
   owned:{green:1,red:1},hatsOwned:{red:1},run:null};
 function load(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));if(s)S=Object.assign(S,s);}catch(e){}}
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
+function save(){try{if(typeof beforeSave==='function')beforeSave();localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
 load();
 
 // ---------- Bard lines (ID = audio file name: audio/<id>.mp3) ----------
@@ -78,6 +78,12 @@ const LINES={
   mozzieStart:[{id:'mozzie_01',t:"Mozzies! They won't sit still. Let's catch them in jars of ten."}],
   mozzieWrong:[{id:'mozziewrong_01',t:"Hmm, count the full jars first. Each jar has ten."}],
   mozzieWin:[{id:'mozziewin_01',t:"All sorted! And only three bites. On me. Lovely."}],
+  stepUp:[{id:'stepup_01',t:"Will you add your flame to the winds and roll stronger, or stay in the kindred circle with the dice you know?"}],
+  kindredFire:[{id:'kindredfire_01',t:"The power of kindred fire! Friends make the flames burn hotter!"}],
+  kindredFrost:[{id:'kindredfrost_01',t:"The power of kindred frost! Friends make the cold bite deeper!"}],
+  teamTurn:[{id:'teamturn_01',t:"Next dragon, your turn!"},{id:'teamturn_02',t:"Pass the dice along!"}],
+  yourTurn:[{id:'yourturn_01',t:"{name}, it's your turn! Where shall we go?"},{id:'yourturn_02',t:"Over to you, {name}! Your bard is ready."}],
+  coopAsk:[{id:'coopask_01',t:"A boss! Shall we call our friends to help?"}],
   rested:[{id:'rested_01',t:"Our friends are back from their nap. Well rested and only slightly grumpy!"}],
   retreat:[{id:'retreat_01',t:"A tactical retreat! Very wise. Very brave. Mostly wise."}],
   skip:[{id:'skip_01',t:"Our shield guard will handle this one. He'll need a long nap afterwards, though!"}],
@@ -164,7 +170,7 @@ function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.to
 function overlay(html,buttons){
   const box=document.getElementById('overlayBox'); box.innerHTML=html;
   const row=document.createElement('div'); row.className='row';
-  buttons.forEach(([label,cls,fn])=>{const b=document.createElement('button');b.className='btn '+cls;b.textContent=label;
+  buttons.forEach(([label,cls,fn])=>{const b=document.createElement('button');b.className='btn '+cls;if(/<(br|small|b)\b/.test(label))b.innerHTML=label;else b.textContent=label;
     b.onclick=()=>{document.getElementById('overlay').classList.remove('on');fn&&fn();};row.appendChild(b);});
   box.appendChild(row); document.getElementById('overlay').classList.add('on');
 }
@@ -195,15 +201,17 @@ const Modules={list:{},current:null,
   run(id,params,host){
     const m=this.list[id]; this.mount(m); this.abort();
     const run={id,params:Object.assign({},m.defaults||{},params||{}),host,party:host.party,
-      attempts:[],rewards:{},flags:{},t0:performance.now(),qt:null,ended:false,
+      attempts:[],rewards:{},rewardsBy:{},flags:{},t0:performance.now(),qt:null,ended:false,
       asked(){this.qt=performance.now();},
       answered(correct,item){const now=performance.now();
         this.attempts.push({item:item==null?'':String(item),correct:!!correct,ms:this.qt!=null?Math.round(now-this.qt):null});this.qt=now;},
-      reward(k,n=1){if(n)this.rewards[k]=(this.rewards[k]||0)+n;},
+      // who: optional team member index in co-op encounters (rewards just for them)
+      reward(k,n=1,who){if(!n)return;if(who==null)this.rewards[k]=(this.rewards[k]||0)+n;
+        else{const b=this.rewardsBy[who]=this.rewardsBy[who]||{};b[k]=(b[k]||0)+n;}},
       flag(k){this.flags[k]=true;},
       retreat(){host.retreat(this);},
       skip(){host.skip(this);},
-      report(outcome){return {module:id,params:this.params,outcome,rewards:this.rewards,flags:this.flags,stats:runStats(this)};},
+      report(outcome){return {module:id,params:this.params,outcome,rewards:this.rewards,rewardsBy:this.rewardsBy,flags:this.flags,stats:runStats(this)};},
       finish(outcome){if(this.ended)return;this.ended=true;Modules.current=null;host.done(this.report(outcome));}};
     this.current={m,run}; m.start(run.params,run); return run;
   },

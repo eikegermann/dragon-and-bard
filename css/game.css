@@ -309,3 +309,21 @@ h2{margin:0 0 8px;font-size:30px}
 .starMeter .smOn{filter:drop-shadow(0 0 6px #ffcf4a)}
 @keyframes smbump{50%{transform:scale(1.08)}}
 @keyframes smpop{40%{transform:scale(1.35)}}
+
+/* Co-op duel team row */
+#teamRow{display:flex;gap:4px;justify-content:center;min-height:0}
+.tmini{opacity:.45;border-radius:50%;padding:2px}.tmini.on{opacity:1;background:#ffffff22;box-shadow:0 0 0 3px var(--gold)}
+
+/* Players */
+#playersStrip{display:flex;gap:2px;cursor:pointer}
+.pmini{opacity:.45;border-radius:50%}.pmini.on{opacity:1;box-shadow:0 0 0 3px var(--gold);background:#ffffff18}
+.plist{display:flex;flex-direction:column;gap:8px;margin:10px 0;text-align:left}
+.prow{display:flex;align-items:center;gap:10px;background:#ffffff10;border-radius:14px;padding:6px 10px;flex-wrap:wrap}
+.prow.cur{outline:2px solid var(--gold)}.prow b{font-size:20px;min-width:90px}
+.pdice{display:flex;gap:4px;margin-left:auto}
+.pd{background:#2a2340;color:var(--ink);border-radius:10px;padding:6px 8px;font-size:14px;border:2px solid transparent}
+.pd.on{border-color:var(--gold);background:#4a3f6a}
+.prm{font-size:14px;padding:6px 10px;min-height:0}
+.helpers{gap:12px}
+.helper{display:flex;flex-direction:column;align-items:center;gap:2px;background:#ffffff10;border-radius:16px;padding:8px 14px;color:inherit;border:3px solid transparent;opacity:.6}
+.helper.on{border-color:var(--gold);opacity:1}.helper span{font-weight:800}.helper b{font-size:13px}

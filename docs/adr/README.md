@@ -24,3 +24,4 @@ Short records of significant decisions about how Dragon & Bard is built, and why
 | [0014](0014-shared-progress-star.md) | A shared progress star for encounter goals | Accepted |
 | [0015](0015-github-issues-for-planning.md) | GitHub Issues are the single planning tool | Accepted |
 | [0016](0016-three-ways-to-play.md) | Three ways to play: Story, Explore and Practice | Accepted (not yet built) |
+| [0017](0017-hotseat-players-active-swap.md) | Hotseat players: shared map, own profiles, active player swapped in | Accepted |

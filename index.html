@@ -11,7 +11,7 @@
 <body>
 <!-- INTRO -->
 <section id="intro" class="screen">
-  <h1>Dragon &amp; Bard</h1>
+  <h1 id="introTitle">Dragon &amp; Bard</h1>
   <div id="introDragon"></div>
   <div class="small">Write your dragon name with your finger or pencil</div>
   <div id="sigWrap"><canvas id="sig"></canvas></div>
@@ -26,6 +26,7 @@
 <section id="map" class="screen">
   <div class="topbar">
     <canvas id="sigSmall" width="160" height="50" style="height:38px;width:122px;background:#fffaf0;border-radius:8px"></canvas>
+    <span id="playersStrip"></span>
     <span class="grp"><span class="glabel">Badges</span>
       <span class="pill" title="Wizard badges">🔮 <span id="bWiz">0</span></span>
       <span class="pill" title="Scholar badges">📜 <span id="bSch">0</span></span>
@@ -40,6 +41,7 @@
       <span class="pill" id="restGhostPill"><span class="zz">👻</span>💤 <span id="rGhost">0</span></span></span>
     <button class="btn gold" id="trainBtn" style="display:none;font-size:18px;min-height:44px;padding:8px 14px">🏹 Train archer (3 🛡️)</button>
     <span class="spacer"></span>
+    <button class="btn" id="playersBtn" title="Players" style="min-height:44px;padding:6px 14px;font-size:24px">👥</button>
     <button class="btn" id="wardrobeBtn" title="Wardrobe" style="min-height:44px;padding:6px 14px;font-size:26px">👗</button>
     <button class="btn ghost" id="resetBtn" title="Start over" style="min-height:44px;padding:8px 14px">⟲</button>
   </div>

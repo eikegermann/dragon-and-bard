@@ -22,9 +22,17 @@ def click_overlay_last(pg):
 
 
 def play_duel(pg):
-    if overlay_on(pg):  # flame choice
-        pg.locator('#overlayBox button').first.click()
-    for _ in range(80):
+    # co-op set-up cards (explainer, then step up or stay for each player), or the flame choice
+    for _k in range(6):
+        if not overlay_on(pg):
+            break
+        t = pg.inner_text('#overlayBox')
+        if 'Together against' in t or 'how will you roll' in t or 'Choose your' in t:
+            btns = pg.locator('#overlayBox button')
+            btns.nth(_k % btns.count() if 'how will you roll' in t else 0).click(); pg.wait_for_timeout(250)
+        else:
+            break
+    for _ in range(120):
         if overlay_on(pg):
             return True
         if pg.is_visible('#rollBtn'):
@@ -256,6 +264,85 @@ def play_mozzies(pg):
 PLAY = {'mystery': play_mystery, 'lilypad': play_lilypad, 'addigator': play_addigator, 'mozzies': play_mozzies, 'scribe': play_scribe, 'duel': play_duel, 'wordsearch': play_wordsearch, 'rhyme': play_rhyme, 'clock': play_clock}
 
 
+def play_current(pg):
+    """Play whatever encounter is running, then close its result card."""
+    mid = pg.evaluate("Modules.current&&Modules.current.m.id")
+    if not mid:
+        return False
+    if PLAY[mid](pg):
+        click_overlay_last(pg); pg.wait_for_timeout(700)
+    return True
+
+
+def test_multiplayer(pg, failures):
+    """Hotseat players: save upgrade, adding a player, turns, and a boss fight played together."""
+    idx = (ROOT / 'index.html').as_uri()
+    pg.goto(idx); pg.evaluate("localStorage.clear()"); pg.reload()
+    pg.fill('#typedName', 'Ann'); pg.click('#startBtn'); pg.wait_for_timeout(400)
+    # an old one-player save (no players list) becomes player 1, keeping everything
+    pg.evaluate("(()=>{S.wiz=5;S.run.prot=2;const o=JSON.parse(JSON.stringify(S));delete o.players;delete o.turn;"
+                "localStorage.setItem(SAVE_KEY,JSON.stringify(o));location.reload();})()")
+    pg.wait_for_timeout(800)
+    st = pg.evaluate("[S.players.length,S.players[0].name,S.players[0].wiz,S.run.prot]")
+    print('upgrade to players:', st)
+    if st != [1, 'Ann', 5, 2]:
+        failures.append('multiplayer: one-player save upgrade')
+    if overlay_on(pg):
+        click_overlay_last(pg)
+    # add a second player
+    pg.click('#playersBtn'); pg.locator('#overlayBox button', has_text='Add a player').click(); pg.wait_for_timeout(300)
+    pg.fill('#typedName', 'Ben'); pg.click('#startBtn'); pg.wait_for_timeout(400)
+    st = pg.evaluate("[S.players.length,S.turn,S.name,S.players[1].name,S.players[0].colour!==S.players[1].colour]")
+    print('added:', st)
+    if st != [2, 0, 'Ann', 'Ben', True]:
+        failures.append('multiplayer: adding a player')
+    click_overlay_last(pg); pg.wait_for_timeout(200)
+    # Ann plays one encounter, then it's Ben's turn
+    for who, nxt in (('Ann', 'Ben'), ('Ben', 'Ann')):
+        pg.locator('#mapSvg .node.avail').first.click(); pg.wait_for_timeout(500)
+        play_current(pg)
+        txt = pg.inner_text('#overlayBox') if overlay_on(pg) else ''
+        st = pg.evaluate("[S.name,S.players.map(p=>p.name)]")
+        print(f'after {who}:', st[0], '| card:', txt.split(chr(10))[0][:40])
+        if st[0] != nxt or ('Over to ' + nxt) not in txt:
+            failures.append(f'multiplayer: turn did not pass from {who} to {nxt}')
+        if overlay_on(pg):
+            click_overlay_last(pg); pg.wait_for_timeout(200)
+    # a boss fight together: put Ann next to the forest boss
+    before = pg.evaluate("S.players.map(p=>p.wiz)")
+    pg.evaluate("""(()=>{const N=S.run.nodes,b=N.find(n=>n.region==='forest'&&n.t==='boss'),a=N.find(n=>n.next.includes(b.id));
+      [a.id].forEach(i=>{if(!S.run.visited.includes(i))S.run.visited.push(i);});a.cleared=true;S.run.pos=a.id;goMap();enterNode(b.id);})()""")
+    pg.wait_for_timeout(400)
+    invite = pg.inner_text('#overlayBox')
+    if 'Fight together' not in invite:
+        failures.append('multiplayer: no invite at the boss')
+    pg.locator('#overlayBox button.fire').click(); pg.wait_for_timeout(400)
+    play_current(pg)
+    team = pg.evaluate("document.getElementById('teamRow').children.length")
+    after = pg.evaluate("S.players.map(p=>p.wiz)")
+    txt = pg.inner_text('#overlayBox') if overlay_on(pg) else ''
+    won = 'Travel on together' in txt
+    print('co-op boss: team', team, '| won' if won else '| lost', '| wiz', before, '->', after)
+    if team != 2:
+        failures.append('multiplayer: co-op duel team')
+    if won:
+        if [a - b for a, b in zip(after, before)] != [2, 2]:
+            failures.append('multiplayer: co-op rewards not shared')
+        pg.locator('#overlayBox button.fire').click(); pg.wait_for_timeout(500)
+        regs = pg.evaluate("S.players.map((p,i)=>S.run.nodes[(i===S.turn?S.run.pos:p.r.pos)].region)")
+        print('travelled together to:', regs)
+        if regs != ['frost', 'frost']:
+            failures.append('multiplayer: travel together')
+    else:
+        rest = pg.evaluate("Object.keys(S.run.bossRest).length")
+        if not rest:
+            failures.append('multiplayer: lost boss should rest')
+    if overlay_on(pg) and 'Over to' in pg.inner_text('#overlayBox'):
+        print('turn passed after the boss fight')
+    else:
+        failures.append('multiplayer: no turn change after the boss fight')
+
+
 def main():
     failures = []
     with sync_playwright() as p:
@@ -329,6 +416,7 @@ def main():
         if not (up['world'] == 3 and up['prot'] == 4 and up['visited'] == 2 and up['hollow']):
             failures.append('world: world-2 save upgrade failed')
         pg.evaluate("goMap()"); pg.wait_for_timeout(300)
+        test_multiplayer(pg, failures)
         b.close()
     if errors:
         print('PAGE ERRORS:', *errors, sep='\n  ')

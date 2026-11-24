@@ -1,5 +1,61 @@
 // ---------- Dragon & Bard: the game (world, party, wardrobe) ----------
 const MAX_PROT=6, MAX_ARCH=3, MAX_GHOST=3;
+
+// ---------- Players (2–4 on one device, taking turns) ----------
+// Each player's own things live in S.players[i]. The active player's are swapped into S and S.run,
+// so the rest of the game and every module keep using S.name, S.wiz, S.run.pos and so on.
+// Shared by everyone: the map (S.run.nodes), what's been discovered, cleared and is resting.
+const MAX_PLAYERS=4;
+const PFIELDS=['name','sig','wiz','sch','quill','quillUsed','colour','hat','owned','hatsOwned','quillLevel','dice'];
+const RFIELDS=['pos','from','newVisit','prot','arch','ghost','rest'];
+const LOOKS=[['green','red'],['red','blue'],['blue','green'],['purple','gold']];
+const DICE=[['one6','🎲 one die, 1–6'],['twin6','🎲🎲 two dice, 1–6'],['big8','🎲 one die, 1–8'],['twin8','🎲🎲 two dice, 1–8']];
+let COOP=null;   // a boss fight played together: {owner, node, members}
+function multi(){return !!(S.players&&S.players.length>1);}
+function stashPlayer(){
+  if(!S.players)return; const p=S.players[S.turn]; if(!p)return;
+  PFIELDS.forEach(k=>p[k]=S[k]); if(S.run){p.r=p.r||{};RFIELDS.forEach(k=>p.r[k]=S.run[k]);}
+}
+function beforeSave(){stashPlayer();}
+function activate(i){
+  stashPlayer(); S.turn=i; const p=S.players[i];
+  PFIELDS.forEach(k=>{if(p[k]!==undefined)S[k]=p[k];}); if(S.run&&p.r)RFIELDS.forEach(k=>S.run[k]=p.r[k]);
+  refreshBard();
+}
+function startNodeId(){return S.run.nodes.find(n=>n.region==='forest'&&n.t==='start').id;}
+// Older saves have one player stored straight in S: they become player 1.
+function ensurePlayers(){
+  if(!S.players||!S.players.length){S.turn=0;S.players=[{}];if(!S.dice)S.dice='one6';stashPlayer();}
+  if(S.run&&S.run.turnCount==null)S.run.turnCount=0;
+}
+function newProfile(name,sig){
+  const used=S.players.map(p=>p.colour), look=LOOKS.find(l=>!used.includes(l[0]))||LOOKS[S.players.length%4];
+  return {name,sig,wiz:0,sch:0,quill:0,quillUsed:false,colour:look[0],hat:look[1],
+    owned:{green:1,red:1,[look[0]]:1},hatsOwned:{red:1,[look[1]]:1},quillLevel:1,dice:'one6',
+    r:{pos:startNodeId(),from:null,newVisit:false,prot:0,arch:0,ghost:0,rest:[]}};
+}
+// After an encounter: hand the tablet to the next player.
+function endTurn(){
+  if(!multi())return goMap();
+  activate((S.turn+1)%S.players.length); save();
+  show('map'); updateHud(); drawMap();
+  overlay(`<div class="big">${dragonSVG(S.colour,120)}</div><h2>Over to ${S.name}!</h2><div>Pass the tablet to ${S.name}.</div>`,
+    [["I'm ready!",'fire',()=>say('yourTurn',4500)]]);
+}
+let ADDING=false;
+function managePlayers(){
+  stashPlayer();
+  const rows=S.players.map((p,i)=>`<div class="prow${i===S.turn?' cur':''}"><span>${dragonSVG(p.colour,54)}</span><b>${p.name}</b>${i===S.turn?' <span class="small">(playing now)</span>':''}
+    <span class="pdice">${DICE.map(([k,l])=>`<button class="pd${(p.dice||'one6')===k?' on':''}" data-i="${i}" data-k="${k}" title="${l}">${l.split(' ')[0]} ${k.endsWith('6')?'1–6':'1–8'}</button>`).join('')}</span>
+    ${S.players.length>1&&i!==S.turn?`<button class="btn ghost prm" data-i="${i}">Remove</button>`:''}</div>`).join('');
+  overlay(`<h2>👥 Players</h2><div class="small">Up to ${MAX_PLAYERS} players take turns: one encounter each, then pass the tablet. Boss fights can be played together.<br>Dice: the dice each player is comfy with in a team boss fight.</div><div class="plist">${rows}</div>`,
+    [...(S.players.length<MAX_PLAYERS?[['➕ Add a player','fire',()=>{ADDING=true;show('intro');introTitle.textContent='A new dragon joins!';startBtn.textContent='Join the adventure!';
+      introDragon.innerHTML=dragonSVG(newProfile('','').colour,150);requestAnimationFrame(setupSig);typedName.value='';say('intro',8000);}]]:[]),['Done','',null]]);
+  document.querySelectorAll('#overlayBox .pd').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;S.players[i].dice=b.dataset.k;if(i===S.turn)S.dice=b.dataset.k;save();managePlayers();});
+  document.querySelectorAll('#overlayBox .prm').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,nm=S.players[i].name;
+    overlay(`<h2>Remove ${nm}?</h2><div>${nm}'s badges and comrades will be gone. The map stays.</div>`,
+      [['Keep','',managePlayers],['Remove','fire',()=>{stashPlayer();const cur=S.players[S.turn];S.players.splice(i,1);S.turn=S.players.indexOf(cur);save();updateHud();drawMap();managePlayers();}]]);});
+}
 function updateHud(){
   bWiz.textContent=S.wiz; bSch.textContent=S.sch; bQuill.textContent=S.quill;
   bProt.textContent=S.run?S.run.prot:0; bArch.textContent=S.run?(S.run.arch||0):0;
@@ -8,6 +64,7 @@ function updateHud(){
   restProtPill.style.display=rp?'':'none'; restArchPill.style.display=ra?'':'none'; restGhostPill.style.display=rg?'':'none';
   restGrp.style.display=(rp||ra||rg)?'':'none';
   trainBtn.style.display=(S.run&&S.run.prot>=3&&(S.run.arch||0)<MAX_ARCH)?'':'none';
+  playersStrip.innerHTML=multi()?S.players.map((p,i)=>`<span class="pmini${i===S.turn?' on':''}" title="${p.name}${i===S.turn?' (your turn)':''}">${dragonSVG(p.colour,34)}</span>`).join(''):'';
   drawSigSmall();
 }
 
@@ -28,9 +85,15 @@ document.getElementById('sigClear').onclick=()=>{sctx.clearRect(0,0,sig.width,si
 document.getElementById('startBtn').onclick=()=>{
   const typed=document.getElementById('typedName').value.trim();
   if(!sigDirty&&!typed){say('intro');return;}
+  if(ADDING){ADDING=false;stashPlayer();
+    S.players.push(newProfile(typed||'little dragon',sigDirty?sig.toDataURL('image/png'):null));
+    introTitle.textContent='Dragon & Bard';startBtn.textContent='Start the adventure!';
+    const np=S.players[S.players.length-1]; save(); goMap();
+    overlay(`<div class="big">${dragonSVG(np.colour,110)}</div><h2>${np.name} joins the adventure!</h2><div>Players take turns: one encounter each, then pass the tablet. ${S.name} is still playing now.</div>`,[['Hooray!','fire',null]]);
+    return;}
   S.name=typed||'little dragon';
   if(sigDirty)S.sig=sig.toDataURL('image/png');
-  save(); say('welcome',5000); newRun(); goMap();
+  save(); say('welcome',5000); newRun(); ensurePlayers(); save(); goMap();
 };
 function drawSigSmall(){
   const c=document.getElementById('sigSmall'),x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);
@@ -171,7 +234,11 @@ function drawMap(){
     h+=`<g class="${cls.join(' ')}" data-id="${n.id}"><circle cx="${n.x}" cy="${n.y}" r="${big?50:38}" fill="${T.col}"/>
       <text x="${n.x}" y="${n.y+14}" text-anchor="middle" font-size="${big?46:36}">${ic}</text>
       ${cls.includes('fresh')?`<text x="${n.x+30}" y="${n.y-24}" font-size="26">✨</text>`:''}</g>`;});
+  if(multi())S.players.forEach((p,i)=>{if(i===S.turn||!p.r)return;const o=R.nodes[p.r.pos];if(!o||o.region!==reg)return;
+    const dx=(i%2?1:-1)*34, dy=-20-(i>>1)*26;
+    h+=`<g opacity=".85" transform="translate(${o.x+dx-28},${o.y+dy-60})">${dragonSVG(p.colour,56).replace('<svg','<svg x="0" y="0"')}</g>`;});
   h+=`<g transform="translate(${cur.x-45},${cur.y-115})">${dragonSVG(S.colour,90).replace('<svg','<svg x="0" y="0"')}</g>`;
+  if(multi())h+=`<text x="24" y="52" font-size="36" font-weight="800" fill="${COLOURS[S.colour]||'#fff'}" stroke="#000" stroke-width="1.5" paint-order="stroke">${S.name}'s turn</text>`;
   h+=`<text x="${MAP_W-24}" y="${MAP_H-22}" text-anchor="end" font-size="34" font-weight="800" fill="#fff" opacity=".55">${RG.name}</text>`;
   svg.innerHTML=h;
   svg.querySelectorAll('.node.avail,.node.back,.node.signn').forEach(g=>g.onclick=()=>enterNode(+g.dataset.id));
@@ -192,8 +259,26 @@ function enterNode(id){
   R.pos=id; if(first)R.visited.push(id);
   if(n.t==='start'||n.cleared){save();drawMap();return;}
   R.from=prev; R.newVisit=first; save();
+  if(n.t==='boss'&&multi())return inviteHelpers(n);
   startEncounter(n);
 }
+// A boss! Ask the others to help. Everyone can reach it, because the discovered map is shared.
+function inviteHelpers(n){
+  say('coopAsk',5000);
+  const others=S.players.map((p,i)=>i).filter(i=>i!==S.turn), pickd=new Set(others);
+  const draw=()=>{overlay(`<div class="big">🐉</div><h2>${REGIONS[n.region].boss.n.replace(/^the /,'The ')}!</h2>
+    <div>${S.name} found the boss. Fight together, or alone?</div><div class="row helpers">${others.map(i=>
+      `<button class="helper${pickd.has(i)?' on':''}" data-i="${i}">${dragonSVG(S.players[i].colour,56)}<span>${S.players[i].name}</span><b>${pickd.has(i)?'✔ helping':'not this time'}</b></button>`).join('')}</div>`,
+    [['Alone','',()=>startEncounter(n)],[pickd.size?'Together!':'Alone','fire',()=>pickd.size?startCoopBoss(n,[S.turn,...others.filter(i=>pickd.has(i))]):startEncounter(n)]]);
+    document.querySelectorAll('#overlayBox .helper').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;pickd.has(i)?pickd.delete(i):pickd.add(i);draw();});};
+  draw();
+}
+function startCoopBoss(n,members){
+  stashPlayer(); COOP={owner:S.turn,node:n.id,members};
+  const reg=n.region, team=members.map(i=>{const p=S.players[i];return {pi:i,name:p.name,colour:p.colour,hat:p.hat,flame:p.dice||'one6'};});
+  Modules.run('duel',{mode:REGIONS[reg].mode,flame:'twin8',boss:true,rival:REGIONS[reg].boss,team},GameHost);
+}
+function coopRestore(){if(COOP){const c=COOP;COOP=null;activate(c.owner);return c;}return null;}
 function startEncounter(n){
   const reg=n.region, mode=REGIONS[reg].mode, late=n.layer>=(reg==='forest'?4:3);
   if(n.t==='duel')Modules.run('duel',{mode,flame:late?(reg==='forest'?'twin6':'big8'):'one6'},GameHost);
@@ -223,27 +308,53 @@ const GameHost={
     ghosts:()=>S.run.ghost||0,
     useGhosts(n){if((S.run.ghost||0)<n)return false;S.run.ghost-=n;addRest('ghost',n,2);return true;}},
   isFirstQuill:()=>!S.quillUsed,
+  coopTurn(pi){if(COOP&&pi!=null&&pi!==S.turn)activate(pi);},
   retreat(){overlay(`<div class="big">↩</div><h2>Retreat?</h2><div>You'll go back to where you were. This puzzle starts fresh if you come back.</div>`,
-    [['Keep going','',null],['Retreat','fire',()=>{Modules.abort();retreat();}]]);},
-  skip(){if(useProtector()){Modules.abort();finishEncounter();}},
+    [['Keep going','',null],['Retreat','fire',()=>{Modules.abort();coopRestore();retreat();}]]);},
+  skip(){if(useProtector()){Modules.abort();coopRestore();finishEncounter();}},
   done(res){
+    if(COOP)return coopDone(res);
     const r=res.rewards;S.wiz+=r.wiz||0;S.sch+=r.sch||0;S.quill+=r.quill||0;S.run.prot+=r.guards||0;
     if(r.ghosts){const room=MAX_GHOST-(S.run.ghost||0)-resting('ghost');if(room>0){S.run.ghost=(S.run.ghost||0)+Math.min(room,r.ghosts);setTimeout(()=>say('ghostJoin',4500),900);}}
     if(res.flags.quillUsed)S.quillUsed=true;
     save();
     const n=S.run.nodes[S.run.pos];
     if((n.t==='boss'||n.gate)&&res.outcome!=='win')finishEncounter({bossLost:true}); else finishEncounter();}};
+// A team boss fight is over: everyone who helped gets the shared rewards plus their own (quill points).
+function coopDone(res){
+  const c=COOP; COOP=null;
+  c.members.forEach((pi,k)=>{activate(pi);const add=(r={})=>{S.wiz+=r.wiz||0;S.sch+=r.sch||0;S.quill+=r.quill||0;};
+    add(res.rewards);add(res.rewardsBy[k]);});
+  activate(c.owner); if(res.flags.quillUsed)S.quillUsed=true; save();
+  if(res.outcome!=='win')return finishEncounter({bossLost:true});
+  const n=S.run.nodes[c.node], ex=n.next.map(i=>S.run.nodes[i]).find(x=>x.t==='exit');
+  finishEncounter({beforeTurn:next=>{
+    if(!ex){next();return;}
+    const where=REGIONS[S.run.nodes[ex.to].region].name;
+    overlay(`<div class="big">🧭</div><h2>Travel on together?</h2><div>The way to ${where} is open. Go on as a team now, or stay and explore a little longer?</div>`,
+      [['Stay a while','',next],[`Off to ${where}!`,'fire',()=>{
+        stashPlayer(); c.members.forEach(pi=>{const p=S.players[pi];p.r.pos=ex.to;});
+        [ex.id,ex.to].forEach(id=>{if(!S.run.visited.includes(id))S.run.visited.push(id);});
+        S.run.pos=ex.to; save(); next();
+        const w=REGIONS[S.run.nodes[ex.to].region].welcome; if(w)setTimeout(()=>say(w,5000),900);}]]);}});
+}
 trainBtn.onclick=()=>{if(S.run.prot<3||(S.run.arch||0)>=MAX_ARCH)return;S.run.prot-=3;S.run.arch=(S.run.arch||0)+1;save();updateHud();say('archer',4000);};
 function finishEncounter(opts={}){
   const R=S.run,n=R.nodes[R.pos];
   if(opts.bossLost){R.bossRest[n.id]=n.gate?2:3; if(R.from!=null)R.pos=R.from;}
   else if(!PLAIN.includes(n.t)){n.cleared=true;n.fresh=false;R.cleared=R.cleared.filter(x=>x!==n.id);R.cleared.push(n.id);}
-  tickRest();
-  for(const k in R.bossRest){R.bossRest[k]--; if(R.bossRest[k]<=0)delete R.bossRest[k];}
-  // encounters refresh through play: oldest cleared stop in this region comes back, keeping the 4 most recent cleared
-  const pool=R.cleared.filter(id=>R.nodes[id].region===n.region&&R.nodes[id].t!=='boss'&&!R.nodes[id].gate);
-  if(pool.length>4){const o=R.nodes[pool[0]];o.cleared=false;o.fresh=true;R.cleared=R.cleared.filter(x=>x!==o.id);}
-  save(); goMap();
+  tickRest();   // this player's own comrades
+  // the shared world moves on once per round (everyone has had a turn), so more players don't speed it up
+  R.turnCount=(R.turnCount||0)+1;
+  if(R.turnCount>=(S.players?S.players.length:1)){R.turnCount=0;
+    for(const k in R.bossRest){R.bossRest[k]--; if(R.bossRest[k]<=0)delete R.bossRest[k];}
+    // encounters refresh through play: oldest cleared stop in this region comes back, keeping the 4 most recent cleared
+    const pool=R.cleared.filter(id=>R.nodes[id].region===n.region&&R.nodes[id].t!=='boss'&&!R.nodes[id].gate);
+    if(pool.length>4){const o=R.nodes[pool[0]];o.cleared=false;o.fresh=true;R.cleared=R.cleared.filter(x=>x!==o.id);}}
+  save();
+  const pass=()=>multi()?endTurn():goMap();
+  if(opts.beforeTurn){show('map');updateHud();drawMap();return opts.beforeTurn(pass);}
+  pass();
 }
 function resting(t){return ((S.run&&S.run.rest)||[]).filter(r=>r.t===t).reduce((a,r)=>a+r.n,0);}
 function addRest(t,n,left=2){if(!S.run.rest)S.run.rest=[];S.run.rest.push({t,n,left});save();updateHud();}
@@ -277,18 +388,20 @@ function swatch(it,owned,current,choose){
   return d;
 }
 wardrobeBtn.onclick=openWardrobe;
+playersBtn.onclick=managePlayers;
+playersStrip.onclick=managePlayers;
 wardrobeBack.onclick=goMap;
 function retreat(){
   const R=S.run,id=R.pos; if(R.newVisit)R.visited=R.visited.filter(x=>x!==id);
   R.pos=(R.from!=null&&R.visited.includes(R.from))?R.from:R.pos; save();
   goMap(); setTimeout(()=>say('retreat',3500),500);
 }
-resetBtn.onclick=()=>overlay(`<div class="big">⟲</div><h2>Start over?</h2><div>This wipes everything: name, badges, quill points, colours and hats.<br>It can't be undone.</div>`,
+resetBtn.onclick=()=>overlay(`<div class="big">⟲</div><h2>Start over?</h2><div>This wipes everything for every player: names, badges, quill points, colours, hats and the map.<br>It can't be undone.</div>`,
   [['Keep playing','',null],['Wipe and start fresh','fire',()=>{try{localStorage.removeItem(SAVE_KEY);}catch(e){} location.reload();}]]);
 
 // ---------- Boot ----------
 refreshBard();
 introDragon.innerHTML=dragonSVG(S.colour,150);
-if(S.name&&S.run){migrateRun();goMap();}
+if(S.name&&S.run){migrateRun();ensurePlayers();activate(S.turn||0);save();goMap();}
 else{show('intro');requestAnimationFrame(setupSig);setTimeout(()=>say('intro',8000),500);}
 window.addEventListener('resize',()=>{if(document.getElementById('intro').classList.contains('on'))setupSig();});
