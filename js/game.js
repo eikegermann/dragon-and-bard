@@ -104,9 +104,10 @@ document.getElementById('startBtn').onclick=()=>{
   save(); say('welcome',5000); newRun(); ensurePlayers(); save(); goMap();
 };
 function pickName(){
+  say('nameAsk',7000);
   const taken=(S.players||[]).map(p=>p.name), pool=DRAGON_NAMES.filter(n=>!taken.includes(n)).sort(()=>Math.random()-.5).slice(0,4);
   overlay(`<div class="big"><img src="${sig.toDataURL('image/png')}" style="height:60px;background:#fffaf0;border-radius:10px" alt=""></div>
-    <h2>Lovely name! But I can't read handwriting…</h2><div>What shall I call you? Pick a dragon name, or type your name.</div>`,
+    <h2>That looks lovely! But I can't read dragon runes…</h2><div>Can you tell me what to call you? Pick a name, or type your name.</div>`,
     [...pool.map(n=>[n,'gold',()=>{typedName.value=n;startBtn.click();}]),['⌨️ Type my name','',()=>typedName.focus()]]);
 }
 function renamePlayer(i,back){

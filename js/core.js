@@ -84,6 +84,7 @@ const LINES={
   teamTurn:[{id:'teamturn_01',t:"Next dragon, your turn!"},{id:'teamturn_02',t:"Pass the dice along!"}],
   yourTurn:[{id:'yourturn_01',t:"{name}, it's your turn! Where shall we go?"},{id:'yourturn_02',t:"Over to you, {name}! Your bard is ready."}],
   coopAsk:[{id:'coopask_01',t:"A boss! Shall we call our friends to help?"}],
+  nameAsk:[{id:'nameask_01',t:"That looks lovely! But I can't read dragon runes… Can you tell me what to call you?"}],
   rested:[{id:'rested_01',t:"Our friends are back from their nap. Well rested and only slightly grumpy!"}],
   retreat:[{id:'retreat_01',t:"A tactical retreat! Very wise. Very brave. Mostly wise."}],
   skip:[{id:'skip_01',t:"Our shield guard will handle this one. He'll need a long nap afterwards, though!"}],
