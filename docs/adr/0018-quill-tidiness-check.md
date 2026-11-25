@@ -1,6 +1,6 @@
 # 18. The quill also checks tidiness, with a chaos-proof setting
 
-- **Status:** Accepted
+- **Status:** Accepted; settings superseded by [0019](0019-proper-writing-default-chaos-crush.md)
 - **Date:** 2026-11-25
 - **Issue:** #51
 

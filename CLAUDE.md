@@ -104,7 +104,8 @@ Plain HTML/CSS/JS, no build step, no dependencies.
   future audio file `audio/<id>.mp3`), `say()`, `hear()` (device text-to-speech), dragon and bard SVG,
   `overlay()`, helpers, and the **module runner** `Modules`.
 - `js/glyphs.js`: character formation paths (100×140 box, strokes in taught order), the $P point-cloud
-  recogniser and the tidiness check (ADR 0018; per-player 🧹 chaos-proof setting `S.quillStrict`).
+  recogniser and the tidiness check (ADRs 0018, 0019): proper writing by default; per-player 🖍️ chaos crush
+  (`S.quillChaos`) allows scribbling over a number.
   The same paths draw the guides and act as templates. Digits only so far.
 - `starMeter(el,{got,need,extra,style})` in `js/core.js`: the shared progress star (gold at `need`, one
   ring, or music note for songs, per extra success). Used by rhymes, word search and clocks.

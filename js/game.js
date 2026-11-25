@@ -6,7 +6,7 @@ const MAX_PROT=6, MAX_ARCH=3, MAX_GHOST=3;
 // so the rest of the game and every module keep using S.name, S.wiz, S.run.pos and so on.
 // Shared by everyone: the map (S.run.nodes), what's been discovered, cleared and is resting.
 const MAX_PLAYERS=4;
-const PFIELDS=['name','sig','wiz','sch','quill','quillUsed','colour','hat','owned','hatsOwned','quillLevel','quillStrict','dice'];
+const PFIELDS=['name','sig','wiz','sch','quill','quillUsed','colour','hat','owned','hatsOwned','quillLevel','quillChaos','dice'];
 const RFIELDS=['pos','from','newVisit','prot','arch','ghost','rest'];
 const LOOKS=[['green','red'],['red','blue'],['blue','green'],['purple','gold']];
 const DRAGON_NAMES=['Ember','Pebble','Sparks','Bramble','Cinder','Puddle','Thistle','Nugget','Comet','Maple','Pickle','Smudge','Fizz','Juniper','Waffle','Rumble'];
@@ -49,14 +49,14 @@ let ADDING=false;
 function managePlayers(){
   stashPlayer();
   const rows=S.players.map((p,i)=>`<div class="prow${i===S.turn?' cur':''}"><span>${dragonSVG(p.colour,54)}</span><b>${p.name}</b> <button class="pd prn" data-i="${i}" title="Rename">✏️</button>${sigImg(p)}${i===S.turn?' <span class="small">(playing now)</span>':''}
-    <button class="pd pstrict${p.quillStrict?' on':''}" data-i="${i}" title="Quill: no scribbles or decorations allowed">🧹 ${p.quillStrict?'Chaos-proof quill: on':'Chaos-proof quill: off'}</button>
+    <button class="pd pstrict${p.quillChaos?' on':''}" data-i="${i}" title="Quill: scribbling over your number is allowed">🖍️ Chaos crush: ${p.quillChaos?'on':'off'}</button>
     <span class="pdice">${DICE.map(([k,l])=>`<button class="pd${(p.dice||'one6')===k?' on':''}" data-i="${i}" data-k="${k}" title="${l}">${l.split(' ')[0]} ${k.endsWith('6')?'1–6':'1–8'}</button>`).join('')}</span>
     ${S.players.length>1&&i!==S.turn?`<button class="btn ghost prm" data-i="${i}">Remove</button>`:''}</div>`).join('');
-  overlay(`<h2>👥 Players</h2><div class="small">Up to ${MAX_PLAYERS} players take turns: one encounter each, then pass the tablet. Boss fights can be played together.<br>Dice: the dice each player is comfy with in a team boss fight. 🧹 Chaos-proof quill: scribbles and decorations aren't accepted.</div><div class="plist">${rows}</div>`,
+  overlay(`<h2>👥 Players</h2><div class="small">Up to ${MAX_PLAYERS} players take turns: one encounter each, then pass the tablet. Boss fights can be played together.<br>Dice: the dice each player is comfy with in a team boss fight. 🖍️ Chaos crush: scribbling and decorating over your number is allowed (normally the quill wants proper writing).</div><div class="plist">${rows}</div>`,
     [...(S.players.length<MAX_PLAYERS?[['➕ Add a player','fire',()=>{ADDING=true;show('intro');introTitle.textContent='A new dragon joins!';startBtn.textContent='Join the adventure!';
       introDragon.innerHTML=dragonSVG(newProfile('','').colour,150);requestAnimationFrame(setupSig);typedName.value='';say('intro',8000);}]]:[]),['Done','',null]]);
   document.querySelectorAll('#overlayBox .pdice .pd').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;S.players[i].dice=b.dataset.k;if(i===S.turn)S.dice=b.dataset.k;save();managePlayers();});
-  document.querySelectorAll('#overlayBox .pstrict').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,v=!S.players[i].quillStrict;S.players[i].quillStrict=v;if(i===S.turn)S.quillStrict=v;save();managePlayers();});
+  document.querySelectorAll('#overlayBox .pstrict').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,v=!S.players[i].quillChaos;S.players[i].quillChaos=v;if(i===S.turn)S.quillChaos=v;save();managePlayers();});
   document.querySelectorAll('#overlayBox .prn').forEach(b=>b.onclick=()=>renamePlayer(+b.dataset.i,managePlayers));
   document.querySelectorAll('#overlayBox .prm').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,nm=S.players[i].name;
     overlay(`<h2>Remove ${nm}?</h2><div>${nm}'s badges and comrades will be gone. The map stays.</div>`,

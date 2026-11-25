@@ -123,10 +123,11 @@ function tidiness(strokes,ch,inPlace){
   }
   return best;
 }
-// gentle: catches real scribbling over a number; strict ("chaos-proof"): a decorated number isn't accepted either
+// Normal play requires proper writing: scribbles and decorations over a number aren't accepted.
+// (Chaos crush mode skips this check altogether; see js/quill.js.)
 // Tuned in tests/quill_accuracy.js on clean, wobbly and decorated digits; retune with real samples.
-const TIDY={gentle:{precision:.76,recall:.6,ink:1.42},strict:{precision:.85,recall:.75,ink:1.3}};
-function tidyEnough(strokes,ch,inPlace,strict){const t=tidiness(strokes,ch,inPlace),need=TIDY[strict?'strict':'gentle'];
+const TIDY={precision:.85,recall:.75,ink:1.3};
+function tidyEnough(strokes,ch,inPlace){const t=tidiness(strokes,ch,inPlace),need=TIDY;
   return {ok:t.precision>=need.precision&&t.recall>=need.recall&&t.ink<=need.ink,...t};}
 
 const Glyphs={DIGITS,VARIANTS,recognise,verdict,formation,tidiness,tidyEnough,TIDY,LIMIT,RATIO};

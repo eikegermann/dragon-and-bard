@@ -33,13 +33,11 @@ function decorate(strokes,kind){const d=[];
   if(kind==='teeth'){const y=r(60,110),t=[];for(let x=15;x<=85;x+=10)t.push([x,y+((x/10)%2?12:0)]);d.push(t);}
   if(kind==='droppings')for(let k=0;k<6;k++){const x=r(10,90),y=r(10,130);d.push([[x,y],[x+4,y+3],[x+1,y+6],[x-3,y+2],[x,y]]);}
   return strokes.concat(d.map(s=>{const o=[];for(let i=0;i<s.length-1;i++)for(let k=0;k<6;k++)o.push([s[i][0]+(s[i+1][0]-s[i][0])*k/6,s[i][1]+(s[i+1][1]-s[i][1])*k/6]);o.push(s[s.length-1]);return o;}));}
-const pass=(make,strict)=>{let ok=0,n=0;for(let k=0;k<30;k++)for(const ch in G.DIGITS){n++;if(G.tidyEnough(make(ch),ch,false,strict).ok)ok++;}return ok/n;};
+const pass=make=>{let ok=0,n=0;for(let k=0;k<30;k++)for(const ch in G.DIGITS){n++;if(G.tidyEnough(make(ch),ch,false).ok)ok++;}return ok/n;};
 const clean=ch=>wobble(G.DIGITS[ch].strokes,3);
-const decs=['flag','teeth','scratch','droppings'].map(kind=>[kind,ch=>decorate(wobble(G.DIGITS[ch].strokes,3),kind)]);
-const cN=pass(clean,false),cS=pass(clean,true);
-console.log(`tidiness: clean numbers accepted ${(cN*100).toFixed(0)}% (normal), ${(cS*100).toFixed(0)}% (chaos-proof)`);
-for(const [kind,make] of decs){const n=pass(make,false),st=pass(make,true);
-  console.log(`  with ${kind}: accepted ${(n*100).toFixed(0)}% (normal), ${(st*100).toFixed(0)}% (chaos-proof)`);
-  if(st>.25)fail=true;}
-if(cN<.9)fail=true;
+const cN=pass(clean);
+console.log(`tidiness (normal play; chaos crush skips it): clean numbers accepted ${(cN*100).toFixed(0)}%`);
+for(const kind of ['flag','teeth','scratch','droppings']){const n=pass(ch=>decorate(wobble(G.DIGITS[ch].strokes,3),kind));
+  console.log(`  with ${kind}: accepted ${(n*100).toFixed(0)}%`); if(n>.25)fail=true;}
+if(cN<.75)fail=true;
 if(fail){console.log('FAILED: misreads, or tidiness out of range');process.exit(1);}

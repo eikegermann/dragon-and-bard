@@ -165,7 +165,7 @@ function done(){
         b.el.classList.add('qbad');setTimeout(()=>b.el.classList.remove('qbad'),600);
         msg(`Hmm, that doesn't look like a ${b.expected} yet. Watch again, and follow the arrows!`,'warn'); return;}
       // the right number, but scribbled over or decorated? (on the guide when tracing, any size otherwise)
-      if(!Glyphs.tidyEnough(b.strokes,b.expected,b.mode===1,strict()).ok){
+      if(!chaos()&&!Glyphs.tidyEnough(b.strokes,b.expected,b.mode===1).ok){
         b.retries++; b.messy=(b.messy||0)+1; b.strokes=[]; redraw(b); if(b.mode===1)showGuide(b,false);
         b.el.classList.add('qbad');setTimeout(()=>b.el.classList.remove('qbad'),600);
         msg(MESSY,'warn'); return;}
@@ -173,15 +173,16 @@ function done(){
     }
     if(!b.strokes.length)continue;         // an empty free box is fine (one-digit answers)
     const c=Glyphs.recognise(b.strokes), v=Glyphs.verdict(c);
-    const tidy=ch=>Glyphs.tidyEnough(b.strokes,ch,false,strict()).ok;
-    if(v!=='unknown'&&!tidy(c[0].ch)&&!(c[1]&&tidy(c[1].ch))){b.messy=(b.messy||0)+1;messy(b);return;}
+    const tidy=ch=>Glyphs.tidyEnough(b.strokes,ch,false).ok;
+    if(!chaos()&&v!=='unknown'&&!tidy(c[0].ch)&&!(c[1]&&tidy(c[1].ch))){b.messy=(b.messy||0)+1;messy(b);return;}
     if(v==='sure'){b.resolved=c[0].ch;continue;}
     ask(b,v==='unsure'?[c[0].ch,c[1].ch]:[]); return;
   }
   finish();
 }
 const MESSY="I'm sorry, I can't read that. Could you write it more clearly?";
-function strict(){return typeof S!=='undefined'&&!!S.quillStrict;}
+// Chaos crush: the player may scribble and decorate after writing; the number underneath still counts.
+function chaos(){return typeof S!=='undefined'&&!!S.quillChaos;}
 // Scribbles, teeth, flags… The number may be in there, but it has to be written clearly.
 function messy(b){
   Q.boxes.forEach(x=>x.el.classList.toggle('qfocus',x===b));
@@ -199,8 +200,8 @@ function ask(b,options){
   const row=qq.querySelector('.qopts');
   const add=(label,cls,fn)=>{const x=document.createElement('button');x.className='btn '+cls;x.innerHTML=label;x.onclick=fn;row.appendChild(x);};
   options.forEach(o=>add(`<span class="qbig">${o}</span>`,'',()=>{b.resolved=o;b.asked=true;b.el.classList.remove('qfocus');qq.innerHTML='';done();}));
-  // chaos-proof: an unreadable box can't be talked past with "I wrote…"
-  if(options.length||!strict())add(options.length?'Something else':'I wrote…','',()=>whichDidYouWrite(b));
+  // normal play: an unreadable box can't be talked past with "I wrote…"
+  if(options.length||chaos())add(options.length?'Something else':'I wrote…','',()=>whichDidYouWrite(b));
   if(!options.length)add('↺ Try again','',()=>{b.strokes=[];redraw(b);b.el.classList.remove('qfocus');qq.innerHTML='';msg('');});
   add('✏️ Show me how','gold',()=>showMeHow(b));
 }
