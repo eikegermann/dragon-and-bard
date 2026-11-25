@@ -56,7 +56,7 @@ function openQuill(note){
 function check(x,r){
   if(!SC)return;
   const ok=r.text===x, how=['','trace','remember','free'][r.level];
-  const tags=[how,r.chars.some(c=>c.misread)?'misread, child said':r.chars.some(c=>c.asked)?'asked':'',r.chars.some(c=>c.retries)?'retried':'',r.chars.some(c=>c.peeks)?'peeked':'',
+  const tags=[how,r.chars.some(c=>c.misread)?'misread, child said':r.chars.some(c=>c.asked)?'asked':'',r.chars.some(c=>c.retries)?'retried':'',r.chars.some(c=>c.messy)?`too messy ×${r.chars.reduce((a,c)=>a+(c.messy||0),0)}`:'',r.chars.some(c=>c.peeks)?'peeked':'',
     r.chars.every(c=>c.start)?'':'start off',r.chars.every(c=>c.dir)?'':'direction off'].filter(Boolean).join(', ');
   RUN.answered(ok,`${x} → wrote ${r.text||'(nothing)'} (${tags})`);
   if(!ok){SC.tries++;say('scribeWrong',3500);

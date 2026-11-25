@@ -297,6 +297,19 @@ def test_multiplayer(pg, failures):
     if st != [2, 0, 'Ann', 'Ben', True]:
         failures.append('multiplayer: adding a player')
     click_overlay_last(pg); pg.wait_for_timeout(200)
+    # a player who only writes their name by hand picks a dragon name for the bard to use
+    pg.click('#playersBtn'); pg.locator('#overlayBox button', has_text='Add a player').click(); pg.wait_for_timeout(300)
+    bx = pg.locator('#sig').bounding_box()
+    pg.mouse.move(bx['x'] + 40, bx['y'] + 40); pg.mouse.down(); pg.mouse.move(bx['x'] + 160, bx['y'] + 90, steps=8); pg.mouse.up()
+    pg.click('#startBtn'); pg.wait_for_timeout(300)
+    picked = pg.locator('#overlayBox button.gold').first.inner_text()
+    pg.locator('#overlayBox button.gold').first.click(); pg.wait_for_timeout(400)
+    st = pg.evaluate("[S.players.length,S.players[2].name,!!S.players[2].sig]")
+    print('handwritten-only player named:', st)
+    if st != [3, picked, True]:
+        failures.append('multiplayer: name picker for a handwritten name')
+    click_overlay_last(pg); pg.wait_for_timeout(200)
+    pg.evaluate("S.players.splice(2,1);save()")
     # Ann plays one encounter, then it's Ben's turn
     for who, nxt in (('Ann', 'Ben'), ('Ben', 'Ann')):
         pg.locator('#mapSvg .node.avail').first.click(); pg.wait_for_timeout(500)

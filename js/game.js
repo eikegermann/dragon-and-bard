@@ -6,9 +6,12 @@ const MAX_PROT=6, MAX_ARCH=3, MAX_GHOST=3;
 // so the rest of the game and every module keep using S.name, S.wiz, S.run.pos and so on.
 // Shared by everyone: the map (S.run.nodes), what's been discovered, cleared and is resting.
 const MAX_PLAYERS=4;
-const PFIELDS=['name','sig','wiz','sch','quill','quillUsed','colour','hat','owned','hatsOwned','quillLevel','dice'];
+const PFIELDS=['name','sig','wiz','sch','quill','quillUsed','colour','hat','owned','hatsOwned','quillLevel','quillStrict','dice'];
 const RFIELDS=['pos','from','newVisit','prot','arch','ghost','rest'];
 const LOOKS=[['green','red'],['red','blue'],['blue','green'],['purple','gold']];
+const DRAGON_NAMES=['Ember','Pebble','Sparks','Bramble','Cinder','Puddle','Thistle','Nugget','Comet','Maple','Pickle','Smudge','Fizz','Juniper','Waffle','Rumble'];
+// the handwritten name as a little picture (the game can't read handwriting names yet)
+const sigImg=(p,h=34)=>p&&p.sig?`<img class="sigimg" src="${p.sig}" style="height:${h}px" alt="">`:'';
 const DICE=[['one6','🎲 one die, 1–6'],['twin6','🎲🎲 two dice, 1–6'],['big8','🎲 one die, 1–8'],['twin8','🎲🎲 two dice, 1–8']];
 let COOP=null;   // a boss fight played together: {owner, node, members}
 function multi(){return !!(S.players&&S.players.length>1);}
@@ -39,19 +42,22 @@ function endTurn(){
   if(!multi())return goMap();
   activate((S.turn+1)%S.players.length); save();
   show('map'); updateHud(); drawMap();
-  overlay(`<div class="big">${dragonSVG(S.colour,120)}</div><h2>Over to ${S.name}!</h2><div>Pass the tablet to ${S.name}.</div>`,
+  overlay(`<div class="big">${dragonSVG(S.colour,120)}</div><h2>Over to ${S.name}!</h2><div>${sigImg(S,56)}</div><div>Pass the tablet to ${S.name}.</div>`,
     [["I'm ready!",'fire',()=>say('yourTurn',4500)]]);
 }
 let ADDING=false;
 function managePlayers(){
   stashPlayer();
-  const rows=S.players.map((p,i)=>`<div class="prow${i===S.turn?' cur':''}"><span>${dragonSVG(p.colour,54)}</span><b>${p.name}</b>${i===S.turn?' <span class="small">(playing now)</span>':''}
+  const rows=S.players.map((p,i)=>`<div class="prow${i===S.turn?' cur':''}"><span>${dragonSVG(p.colour,54)}</span><b>${p.name}</b> <button class="pd prn" data-i="${i}" title="Rename">✏️</button>${sigImg(p)}${i===S.turn?' <span class="small">(playing now)</span>':''}
+    <button class="pd pstrict${p.quillStrict?' on':''}" data-i="${i}" title="Quill: no scribbles or decorations allowed">🧹 ${p.quillStrict?'Chaos-proof quill: on':'Chaos-proof quill: off'}</button>
     <span class="pdice">${DICE.map(([k,l])=>`<button class="pd${(p.dice||'one6')===k?' on':''}" data-i="${i}" data-k="${k}" title="${l}">${l.split(' ')[0]} ${k.endsWith('6')?'1–6':'1–8'}</button>`).join('')}</span>
     ${S.players.length>1&&i!==S.turn?`<button class="btn ghost prm" data-i="${i}">Remove</button>`:''}</div>`).join('');
-  overlay(`<h2>👥 Players</h2><div class="small">Up to ${MAX_PLAYERS} players take turns: one encounter each, then pass the tablet. Boss fights can be played together.<br>Dice: the dice each player is comfy with in a team boss fight.</div><div class="plist">${rows}</div>`,
+  overlay(`<h2>👥 Players</h2><div class="small">Up to ${MAX_PLAYERS} players take turns: one encounter each, then pass the tablet. Boss fights can be played together.<br>Dice: the dice each player is comfy with in a team boss fight. 🧹 Chaos-proof quill: scribbles and decorations aren't accepted.</div><div class="plist">${rows}</div>`,
     [...(S.players.length<MAX_PLAYERS?[['➕ Add a player','fire',()=>{ADDING=true;show('intro');introTitle.textContent='A new dragon joins!';startBtn.textContent='Join the adventure!';
       introDragon.innerHTML=dragonSVG(newProfile('','').colour,150);requestAnimationFrame(setupSig);typedName.value='';say('intro',8000);}]]:[]),['Done','',null]]);
-  document.querySelectorAll('#overlayBox .pd').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;S.players[i].dice=b.dataset.k;if(i===S.turn)S.dice=b.dataset.k;save();managePlayers();});
+  document.querySelectorAll('#overlayBox .pdice .pd').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;S.players[i].dice=b.dataset.k;if(i===S.turn)S.dice=b.dataset.k;save();managePlayers();});
+  document.querySelectorAll('#overlayBox .pstrict').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,v=!S.players[i].quillStrict;S.players[i].quillStrict=v;if(i===S.turn)S.quillStrict=v;save();managePlayers();});
+  document.querySelectorAll('#overlayBox .prn').forEach(b=>b.onclick=()=>renamePlayer(+b.dataset.i,managePlayers));
   document.querySelectorAll('#overlayBox .prm').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,nm=S.players[i].name;
     overlay(`<h2>Remove ${nm}?</h2><div>${nm}'s badges and comrades will be gone. The map stays.</div>`,
       [['Keep','',managePlayers],['Remove','fire',()=>{stashPlayer();const cur=S.players[S.turn];S.players.splice(i,1);S.turn=S.players.indexOf(cur);save();updateHud();drawMap();managePlayers();}]]);});
@@ -85,16 +91,32 @@ document.getElementById('sigClear').onclick=()=>{sctx.clearRect(0,0,sig.width,si
 document.getElementById('startBtn').onclick=()=>{
   const typed=document.getElementById('typedName').value.trim();
   if(!sigDirty&&!typed){say('intro');return;}
+  // only a handwritten name: the bard can't read it, so let the player pick what he should call them
+  if(!typed){pickName();return;}
   if(ADDING){ADDING=false;stashPlayer();
     S.players.push(newProfile(typed||'little dragon',sigDirty?sig.toDataURL('image/png'):null));
     introTitle.textContent='Dragon & Bard';startBtn.textContent='Start the adventure!';
     const np=S.players[S.players.length-1]; save(); goMap();
-    overlay(`<div class="big">${dragonSVG(np.colour,110)}</div><h2>${np.name} joins the adventure!</h2><div>Players take turns: one encounter each, then pass the tablet. ${S.name} is still playing now.</div>`,[['Hooray!','fire',null]]);
+    overlay(`<div class="big">${dragonSVG(np.colour,110)}</div><h2>${np.name} joins the adventure!</h2><div>${sigImg(np,50)}</div><div>Players take turns: one encounter each, then pass the tablet. ${S.name} is still playing now.</div>`,[['Hooray!','fire',null]]);
     return;}
   S.name=typed||'little dragon';
   if(sigDirty)S.sig=sig.toDataURL('image/png');
   save(); say('welcome',5000); newRun(); ensurePlayers(); save(); goMap();
 };
+function pickName(){
+  const taken=(S.players||[]).map(p=>p.name), pool=DRAGON_NAMES.filter(n=>!taken.includes(n)).sort(()=>Math.random()-.5).slice(0,4);
+  overlay(`<div class="big"><img src="${sig.toDataURL('image/png')}" style="height:60px;background:#fffaf0;border-radius:10px" alt=""></div>
+    <h2>Lovely name! But I can't read handwriting…</h2><div>What shall I call you? Pick a dragon name, or type your name.</div>`,
+    [...pool.map(n=>[n,'gold',()=>{typedName.value=n;startBtn.click();}]),['⌨️ Type my name','',()=>typedName.focus()]]);
+}
+function renamePlayer(i,back){
+  const p=S.players[i];
+  overlay(`<h2>A new name for ${p.name}</h2><div>${sigImg(p,50)}</div><input id="renameBox" class="renamebox" maxlength="20" value="${p.name.replace(/"/g,'&quot;')}">
+    <div class="row" style="gap:6px;flex-wrap:wrap;justify-content:center">${DRAGON_NAMES.slice(0,8).map(n=>`<button class="pd rn">${n}</button>`).join('')}</div>`,
+    [['Cancel','',back],['Save','fire',()=>{const v=(document.getElementById('renameBox').value||'').trim();
+      if(v){p.name=v;if(i===S.turn)S.name=v;save();updateHud();drawMap();}back&&back();}]]);
+  document.querySelectorAll('#overlayBox .rn').forEach(b=>b.onclick=()=>{document.getElementById('renameBox').value=b.textContent;});
+}
 function drawSigSmall(){
   const c=document.getElementById('sigSmall'),x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);
   if(S.sig){const img=new Image();img.onload=()=>x.drawImage(img,0,0,c.width,c.height);img.src=S.sig;}

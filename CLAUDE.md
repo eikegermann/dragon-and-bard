@@ -69,6 +69,8 @@ upsell, no manipulative rewards**. The gap it aims at: learning that *is* the ga
   only boss fights played together. Kindred fire/frost: smaller dice than the boss get a bonus after a right
   answer; players may "roll stronger" or "stay in the circle". Profiles stay on the device.
 - The bard speaks **Australian English** (he models phonics sounds). Side characters may have accents.
+- Names: a player who only writes their name by hand picks a dragon name (or types one) so the bard has
+  something to say; the handwritten name is shown as a picture. Renaming is in 👥.
 
 **Privacy and safety**
 - **Never put personal details about the child** (name, age, school, health, support team) in the public
@@ -101,8 +103,9 @@ Plain HTML/CSS/JS, no build step, no dependencies.
 - `js/core.js`: save/load (`dragonBardSave_v1` in localStorage), bard `LINES` (each line's id is its
   future audio file `audio/<id>.mp3`), `say()`, `hear()` (device text-to-speech), dragon and bard SVG,
   `overlay()`, helpers, and the **module runner** `Modules`.
-- `js/glyphs.js`: character formation paths (100×140 box, strokes in taught order) and the $P point-cloud
-  recogniser. The same paths draw the guides and act as templates. Digits only so far.
+- `js/glyphs.js`: character formation paths (100×140 box, strokes in taught order), the $P point-cloud
+  recogniser and the tidiness check (ADR 0018; per-player 🧹 chaos-proof setting `S.quillStrict`).
+  The same paths draw the guides and act as templates. Digits only so far.
 - `starMeter(el,{got,need,extra,style})` in `js/core.js`: the shared progress star (gold at `need`, one
   ring, or music note for songs, per extra success). Used by rhymes, word search and clocks.
 - `js/quill.js`: the writing card. `Quill.open({count, prompt, note, onDone, onCancel})`; level in `S.quillLevel`.

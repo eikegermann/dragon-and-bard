@@ -47,6 +47,7 @@ function launch(params){
   SB.p={guards:+$('sbGuards').value||0,archers:+$('sbArchers').value||0,ghosts:+$('sbGhosts').value||0,max:+$('sbMax').value||0,used:{guards:0,archers:0,ghosts:0}};
   SB.firstQuill=$('sbFirstQuill').checked;
   S.quillLevel=+$('sbQuill').value||1;
+  S.quillStrict=$('sbStrict').checked;
   SB.launch={module:$('sbModule').value,preset:$('sbPreset').value||'(custom)',params,
     party:{guards:SB.p.guards,archers:SB.p.archers,ghosts:SB.p.ghosts,max:SB.p.max},quillLevel:S.quillLevel};
   Modules.run(SB.launch.module,params,SandboxHost);
