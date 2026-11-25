@@ -4,7 +4,9 @@
 // free them all and a ghost may travel with you for a while.
 // Ghost companions can help: 1 ghost lights up the minutes, 2 ghosts also the hour, 3 ghosts set the clock.
 (function(){
-const STEP={hour:60,half:30,quarter:15,five:5,minute:1};
+// A real clock: both hands can be turned, and turning either one moves the other, like real gears.
+// How close the long hand has to be (minutes either side), by level: easier readings allow a little slack.
+const GRACE={hour:2,half:2,quarter:1,five:1,minute:0};
 const NUM=['twelve','one','two','three','four','five','six','seven','eight','nine','ten','eleven'];
 const ROOMS=['🛏️ Bedroom','🍽️ Dining room','📚 Library','🎻 Music room','🕯️ Attic','🧺 Cellar'];
 
@@ -64,13 +66,13 @@ const M={
   start(p,run){
     RUN=run;
     const n=Math.max(1,Math.min(p.clocks||3,ROOMS.length));
-    CK={p,step:STEP[p.level]||15,targets:makeTargets(p,n),rooms:ROOMS.slice(0,n),state:Array(n).fill('todo'),
+    CK={p,grace:GRACE[p.level]??1,t:0,targets:makeTargets(p,n),rooms:ROOMS.slice(0,n),state:Array(n).fill('todo'),
         i:0,tries:0,firstTry:true,h:12,m:0,hint:0,drag:null,busy:false,freed:0};
     ckSkip.style.visibility=RUN.party.guards()>0?'visible':'hidden';
     show('clock'); loadClock(); setTimeout(()=>say('clockStart',6500),300);
   },
   abort(){CK=null;},
-  peek(){return CK&&{target:CK.targets[CK.i],h:CK.h,m:CK.m,busy:CK.busy};}   // for tests
+  peek(){return CK&&{target:CK.targets[CK.i],h:CK.h,m:CK.m,t:CK.t,busy:CK.busy};}   // for tests
 };
 
 // ----- times -----
@@ -143,13 +145,16 @@ function draw(){
     glowH:CK.hint>=2?hintHour(t,fmt):null});
 }
 
+// The time on the clock is minutes past 12 (0–719); h and m are read from it.
+function setT(t){CK.t=((Math.round(t)%720)+720)%720; CK.m=CK.t%60; CK.h=Math.floor(CK.t/60)||12;}
+const tOf=x=>(x.h%12)*60+x.m;
+const cdiff=(a,b,mod)=>{const d=Math.abs(a-b)%mod;return Math.min(d,mod-d);};
 // ----- dragging -----
 function ptr(e){const r=ckFace.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*250-125,y=(e.clientY-r.top)/r.height*250-125;
   let deg=Math.atan2(y,x)*180/Math.PI+90; if(deg<0)deg+=360; return {deg,r:Math.hypot(x,y)};}
 const adiff=(a,b)=>{const d=Math.abs(a-b)%360;return d>180?360-d:d;};
 function pickHand(e){
   const p=ptr(e); if(p.r>R+30)return null;
-  if(CK.p.level==='hour')return 'h';            // the minute hand stays on 12 at this level
   const ha=((CK.h%12)*30)+CK.m*.5, ma=CK.m*6, dh=adiff(p.deg,ha), dm=adiff(p.deg,ma);
   if(dh<25&&dm<25)return p.r<52?'h':'m';
   return dh<dm?'h':'m';
@@ -157,11 +162,11 @@ function pickHand(e){
 function moveHand(e){
   const p=ptr(e);
   if(CK.drag==='m'){
-    const m=(Math.round(p.deg/6/CK.step)*CK.step)%60;
-    // geared like a real clock: carrying the minute hand past 12 moves the hour on (or back)
-    if(CK.m>=45&&m<15)CK.h=CK.h%12+1; else if(CK.m<15&&m>=45)CK.h=(CK.h+10)%12+1;
-    CK.m=m;}
-  else{let h=Math.round((p.deg-CK.m*.5)/30); h=((h%12)+12)%12; CK.h=h===0?12:h;}
+    // the long hand: one minute at a time; carrying it past 12 moves the hour on (or back)
+    let d=Math.round(p.deg/6)%60-CK.m; if(d>30)d-=60; if(d<-30)d+=60; setT(CK.t+d);}
+  else{
+    // the short hand: turning it turns the long hand too (12 minutes per number it passes)
+    let t=p.deg*2; const k=Math.round((CK.t-t)/720); setT(t+k*720);}
   ckMsg.textContent=''; draw();
 }
 
@@ -170,8 +175,7 @@ function loadClock(){
   const t=CK.targets[CK.i];
   CK.tries=0; CK.firstTry=true; CK.hint=0; CK.busy=false;
   // the clock stopped at some other time
-  do{CK.h=1+Math.floor(Math.random()*12);CK.m=CK.p.level==='hour'?0:(Math.floor(Math.random()*60/CK.step)*CK.step)%60;}
-  while(CK.h===t.h&&CK.m===t.m);
+  do{setT(Math.floor(Math.random()*720/5)*5);}while(cdiff(CK.t,tOf(t),720)<40);
   renderNote(); renderSide(); draw(); ckMsg.textContent=''; RUN.asked();
 }
 function renderNote(){
@@ -193,25 +197,26 @@ const gh=()=>RUN.party.ghosts?RUN.party.ghosts():0;
 function ghostHelp(n){
   if(!CK||CK.busy||gh()<n||!RUN.party.useGhosts(n))return;
   RUN.flag('ghostHelp'); CK.firstTry=false;
-  if(n===3){const t=CK.targets[CK.i];CK.h=t.h;CK.m=t.m;draw();say('clockGhostSolve',3500);
+  if(n===3){const t=CK.targets[CK.i];setT(tOf(t));draw();say('clockGhostSolve',3500);
     RUN.answered(true,`${noteText(t,CK.p.format)} (set by the ghosts)`);freeGhost();return;}
   CK.hint=Math.max(CK.hint,n); renderNote(); renderSide(); draw(); say(n===1?'clockGhost1':'clockGhost2',4000);
 }
 function check(){
   if(!CK||CK.busy)return;
-  const t=CK.targets[CK.i], fmt=CK.p.format, okH=CK.h===t.h, okM=CK.m===t.m;
-  RUN.answered(okH&&okM,`${noteText(t,fmt)} (set ${CK.h}:${pad(CK.m)})${CK.hint?` · ${CK.hint} ghost hint`:''}`);
-  if(okH&&okM){say('clockRight',2500);freeGhost();return;}
+  const t=CK.targets[CK.i], fmt=CK.p.format, off=cdiff(CK.t,tOf(t),720), g=CK.grace;
+  const ok=off<=g, okM=cdiff(CK.m,t.m,60)<=g, okH=!ok&&!okM&&off<=30;   // okH: the short hand is about right
+  RUN.answered(ok,`${noteText(t,fmt)} (set ${CK.h}:${pad(CK.m)}${ok&&off?`, ${off} min off, allowed`:''})${CK.hint?` · ${CK.hint} ghost hint`:''}`);
+  if(ok){setT(tOf(t));draw();say('clockRight',2500);freeGhost();return;}
   CK.firstTry=false; CK.tries++;
   ckFace.classList.remove('shake');void ckFace.getBoundingClientRect();ckFace.classList.add('shake');
   if(CK.tries>=CK.p.tries){
     CK.busy=true; CK.state[CK.i]='stuck'; renderSide();
     ckMsg.textContent=`The clock jams and the ghost sighs. This is what ${noteText(t,fmt)} looks like.`;
-    CK.h=t.h;CK.m=t.m;draw(); say('clockStuck',3500);
+    setT(tOf(t));draw(); say('clockStuck',3500);
     setTimeout(next,2600); return;
   }
   ckMsg.textContent=okM?'The long minute hand is right! Now check the short hour hand.':
-    okH?'The short hour hand is right! Now check the long minute hand.':'Not quite. Check both hands.';
+    okH?'The short hour hand is about right! Now check the long minute hand.':'Not quite. Check both hands.';
   say('clockWrong',3500);
 }
 function freeGhost(){
